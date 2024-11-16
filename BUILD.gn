@@ -13,6 +13,11 @@ executable("valetudo-matter") {
   sources = [
     "include/CHIPProjectAppConfig.h",
     "src/main.cpp",
+    "src/identify.cpp",
+    "src/rvc.cpp",
+    "src/rvc-clean-mode.cpp",
+    "src/rvc-operational-state.cpp",
+    "src/rvc-run-mode.cpp",
   ]
   include_dirs = [
     "include",
