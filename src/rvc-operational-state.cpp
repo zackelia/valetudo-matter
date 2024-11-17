@@ -3,13 +3,12 @@
 #include "lib/support/TypeTraits.h"
 
 #include "clusters/rvc-operational-state.h"
+#include "logger.h"
 
 using namespace chip;
 using namespace chip::app;
 using namespace chip::app::Clusters;
 using namespace chip::app::Clusters::RvcOperationalState;
-
-#define TRACE printf("[+] Entering %s\n", __func__)
 
 app::DataModel::Nullable<uint32_t> RvcOperationalStateDelegate::GetCountdownTime()
 {

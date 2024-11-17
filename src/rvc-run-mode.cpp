@@ -3,6 +3,7 @@
 #include "app-common/zap-generated/cluster-enums.h"
 
 #include "clusters/rvc-run-mode.h"
+#include "logger.h"
 #include "lib/core/CHIPError.h"
 #include "lib/support/TypeTraits.h"
 
@@ -11,8 +12,6 @@ using namespace chip::app;
 using namespace chip::app::Clusters;
 using namespace chip::app::Clusters::RvcRunMode;
 using namespace chip::app::Clusters::ModeBase;
-
-#define TRACE printf("[+] Entering %s\n", __func__)
 
 CHIP_ERROR RvcRunModeDelegate::Init()
 {
@@ -70,18 +69,4 @@ void RvcRunModeDelegate::HandleChangeToMode(uint8_t NewMode, ModeBase::Commands:
 {
     TRACE;
     response.status = to_underlying(StatusCode::kBatteryLow);
-}
-
-static ModeBase::Instance * gRvcRunModeInstance = nullptr;
-static RvcRunModeDelegate * gRvcRunModeDelegate = nullptr;
-
-void emberAfRvcRunModeClusterInitCallback(chip::EndpointId endpoint)
-{
-    VerifyOrDie(endpoint == 1);
-    VerifyOrDie(gRvcRunModeInstance == nullptr && gRvcRunModeDelegate == nullptr);
-
-    gRvcRunModeDelegate = new RvcRunModeDelegate;
-    gRvcRunModeInstance = new Instance(gRvcRunModeDelegate, endpoint, RvcRunMode::Id, 0);
-
-    gRvcRunModeInstance->Init();
 }
