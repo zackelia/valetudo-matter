@@ -70,3 +70,8 @@ void RvcRunModeDelegate::HandleChangeToMode(uint8_t NewMode, ModeBase::Commands:
     TRACE;
     response.status = to_underlying(StatusCode::kBatteryLow);
 }
+
+void RvcRunModeDelegate::SetRVC(RVC * rvc)
+{
+    mRvc = rvc;
+}

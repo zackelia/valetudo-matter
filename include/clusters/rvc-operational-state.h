@@ -2,6 +2,11 @@
 
 #include <app/clusters/operational-state-server/operational-state-server.h>
 
+namespace chip::app::Clusters
+{
+    class RVC;
+}
+
 namespace chip::app::Clusters::RvcOperationalState
 {
 
@@ -20,6 +25,8 @@ public:
 
     void HandleGoHomeCommandCallback(OperationalState::GenericOperationalError & err) override;
 
+    void SetRVC(RVC * rvc);
+
 private:
     const Clusters::OperationalState::GenericOperationalState mOperationalStateList[7] = {
         OperationalState::GenericOperationalState(to_underlying(OperationalState::OperationalStateEnum::kStopped)),
@@ -31,6 +38,8 @@ private:
         OperationalState::GenericOperationalState(to_underlying(Clusters::RvcOperationalState::OperationalStateEnum::kDocked)),
     };
     const Span<const CharSpan> mOperationalPhaseList;
+
+    RVC * mRvc = nullptr;
 };
 
 }

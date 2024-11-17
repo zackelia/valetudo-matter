@@ -4,6 +4,7 @@
 
 #include "clusters/rvc-operational-state.h"
 #include "logger.h"
+#include "rvc.h"
 
 using namespace chip;
 using namespace chip::app;
@@ -55,4 +56,11 @@ void RvcOperationalStateDelegate::HandleResumeStateCallback(OperationalState::Ge
 void RvcOperationalStateDelegate::HandleGoHomeCommandCallback(OperationalState::GenericOperationalError & err)
 {
     TRACE;
+
+    mRvc->GoHome(err);
+}
+
+void RvcOperationalStateDelegate::SetRVC(RVC * rvc)
+{
+    mRvc = rvc;
 }

@@ -65,3 +65,8 @@ void RvcCleanModeDelegate::HandleChangeToMode(uint8_t NewMode, ModeBase::Command
     TRACE;
     response.status = to_underlying(StatusCode::kCleaningInProgress);
 }
+
+void RvcCleanModeDelegate::SetRVC(RVC * rvc)
+{
+    mRvc = rvc;
+}

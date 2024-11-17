@@ -2,6 +2,11 @@
 
 #include <app/clusters/mode-base-server/mode-base-server.h>
 
+namespace chip::app::Clusters
+{
+    class RVC;
+}
+
 namespace chip::app::Clusters::RvcRunMode
 {
 
@@ -11,6 +16,7 @@ const uint8_t ModeMapping  = 2;
 
 class RvcRunModeDelegate : public ModeBase::Delegate
 {
+public:
     CHIP_ERROR Init() override;
 
     CHIP_ERROR GetModeLabelByIndex(uint8_t modeIndex, MutableCharSpan & label) override;
@@ -20,6 +26,8 @@ class RvcRunModeDelegate : public ModeBase::Delegate
     CHIP_ERROR GetModeTagsByIndex(uint8_t modeIndex, DataModel::List<detail::Structs::ModeTagStruct::Type> & modeTags) override;
 
     void HandleChangeToMode(uint8_t NewMode, ModeBase::Commands::ChangeToModeResponse::Type & response) override;
+
+    void SetRVC(RVC * rvc);
 
 private:
     using ModeTagStructType               = detail::Structs::ModeTagStruct::Type;
@@ -38,6 +46,8 @@ private:
                                                  .mode     = ModeMapping,
                                                  .modeTags = DataModel::List<const ModeTagStructType>(ModeTagsMapping) },
     };
+
+    RVC * mRvc = nullptr;
 };
 
 }
