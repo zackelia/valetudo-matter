@@ -6,6 +6,7 @@
 #include "clusters/rvc-clean-mode.h"
 #include "clusters/rvc-operational-state.h"
 #include "clusters/rvc-run-mode.h"
+#include "mqtt/broker.h"
 #include "logger.h"
 #include "socket.h"
 
@@ -51,9 +52,7 @@ private:
     RvcOperationalState::Instance mRvcOperationalStateInstance;
     ModeBase::Instance mRunModeInstance;
 
-    // Socket mSocket;
-
-    // void SocketRead();
+    MQTT::Broker mBroker;
 };
 
 }

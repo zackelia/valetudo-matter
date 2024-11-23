@@ -14,6 +14,7 @@ executable("valetudo-matter") {
     "include/CHIPProjectAppConfig.h",
     "src/main.cpp",
     "src/identify.cpp",
+    "src/broker.cpp",
     "src/rvc.cpp",
     "src/rvc-clean-mode.cpp",
     "src/rvc-operational-state.cpp",
