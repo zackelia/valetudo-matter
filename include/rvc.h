@@ -7,6 +7,7 @@
 #include "clusters/rvc-operational-state.h"
 #include "clusters/rvc-run-mode.h"
 #include "logger.h"
+#include "socket.h"
 
 namespace chip::app::Clusters
 {
@@ -49,6 +50,10 @@ private:
     ModeBase::Instance mCleanModeInstance;
     RvcOperationalState::Instance mRvcOperationalStateInstance;
     ModeBase::Instance mRunModeInstance;
+
+    // Socket mSocket;
+
+    // void SocketRead();
 };
 
 }

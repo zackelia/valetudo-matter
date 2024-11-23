@@ -18,6 +18,7 @@ executable("valetudo-matter") {
     "src/rvc-clean-mode.cpp",
     "src/rvc-operational-state.cpp",
     "src/rvc-run-mode.cpp",
+    "src/socket.cpp",
   ]
   include_dirs = [
     "include",
