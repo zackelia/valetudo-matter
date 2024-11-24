@@ -26,7 +26,7 @@ enum class PACKET_TYPE : uint8_t
     DISCONNECT = 14,
 };
 
-CHIP_ERROR Broker::Init()
+CHIP_ERROR Broker::Init(std::function<void(std::string, std::string)> publish_callback)
 {
     TRACE;
 
@@ -37,6 +37,13 @@ CHIP_ERROR Broker::Init()
     }
 
     mServer.SetReadCallback(std::bind(&Broker::ServerRead, this));
+
+    if (publish_callback == nullptr)
+    {
+        ERROR("PublishCallback is nullptr");
+        return CHIP_ERROR_INVALID_ADDRESS;
+    }
+    mPublishCallback = publish_callback;
 
     return CHIP_NO_ERROR;
 }
@@ -104,6 +111,38 @@ std::string consume_utf8(chip::Span<char> & buffer)
     auto sub = buffer.SubSpan(0, len);
     buffer = buffer.SubSpan(len);
     return std::string(sub.begin(), sub.end());
+}
+
+// TODO: Have a global malloc'd buffer that can dynamically grow when needed?
+static char gBuffer[8192];
+
+CHIP_ERROR Broker::Publish(const std::string & topic, const std::string & message)
+{
+    size_t payload_size = sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint16_t) + topic.length() + message.length();
+
+    if (topic.length() > 0b01111111)
+    {
+        ERROR("Variable length detected, need %ld", topic.length());
+        chipDie();
+    }
+
+    DEBUG("Publishing %s, message: %s", topic.c_str(), message.c_str());
+
+    gBuffer[0] = chip::to_underlying(PACKET_TYPE::PUBLISH) << 4;
+    gBuffer[1] = payload_size - 2; // remaining length
+    gBuffer[2] = topic.length() >> 8;
+    gBuffer[3] = topic.length() & 0b11111111;
+    topic.copy(reinterpret_cast<char*>(gBuffer) + 4, topic.length());
+    message.copy(reinterpret_cast<char*>(gBuffer) + 4 + topic.length(), message.length());
+
+    ssize_t sent_bytes = mClient.Send(gBuffer, payload_size);
+    if (sent_bytes < static_cast<ssize_t>(payload_size))
+    {
+        ERROR("Could not send all data?");
+        chipDie();
+    }
+
+    return CHIP_NO_ERROR;
 }
 
 void Broker::HandleConnect(chip::Span<char> & buffer)
@@ -265,8 +304,7 @@ void Broker::HandlePublish(chip::Span<char> & buffer, std::bitset<4> flags)
         packet_identifier = htons(consume<uint16_t>(buffer));
     }
 
-    auto message = buffer;
-    DEBUG("Publish: %s, message: %s", topic_name.data(), message.data());
+    std::string message(buffer.begin(), buffer.end());
 
     if (qos == 1)
     {
@@ -291,6 +329,8 @@ void Broker::HandlePublish(chip::Span<char> & buffer, std::bitset<4> flags)
         ERROR("QoS 2");
         chipDie();
     }
+
+    mPublishCallback(topic_name, message);
 }
 
 void Broker::HandleDisconnect(chip::Span<char> & buffer, std::bitset<4> flags)
@@ -325,9 +365,6 @@ void AssertFlags(std::bitset<4> flags, std::bitset<4> expected)
         chipDie();
     }        
 }
-
-// TODO: Have a global malloc'd buffer that can dynamically grow when needed?
-static char gBuffer[8192];
 
 void Broker::ClientRead()
 {

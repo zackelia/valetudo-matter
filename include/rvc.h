@@ -6,7 +6,7 @@
 #include "clusters/rvc-clean-mode.h"
 #include "clusters/rvc-operational-state.h"
 #include "clusters/rvc-run-mode.h"
-#include "mqtt/broker.h"
+#include "mqtt/valetudo.h"
 #include "logger.h"
 #include "socket.h"
 
@@ -52,7 +52,12 @@ private:
     RvcOperationalState::Instance mRvcOperationalStateInstance;
     ModeBase::Instance mRunModeInstance;
 
-    MQTT::Broker mBroker;
+    MQTT::Valetudo mValetudo;
+
+    void BatteryLevelCallback();
+    void IdentifyCallback();
+    void StateCallback();
+
 };
 
 }

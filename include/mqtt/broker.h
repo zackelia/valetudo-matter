@@ -1,6 +1,7 @@
 #pragma once
 
 #include <bitset>
+#include <functional>
 
 #include "lib/support/Span.h"
 #include "socket.h"
@@ -15,12 +16,16 @@ class Broker
 public:
     Broker() = default;
 
-    CHIP_ERROR Init();
+    CHIP_ERROR Init(std::function<void(std::string, std::string)> publish_callback);
+
+    CHIP_ERROR Publish(const std::string &, const std::string &);
 
 private:
     Socket mServer;
     Socket mClient;
     bool mConnected = false;
+
+    std::function<void(std::string, std::string)> mPublishCallback = nullptr;
 
     void ServerRead();
     void ClientRead();
