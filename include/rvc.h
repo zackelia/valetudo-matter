@@ -41,6 +41,8 @@ public:
                                          : to_underlying(OperationalState::ErrorStateEnum::kUnableToCompleteOperation));
     }
 
+    void SetCleanMode(uint8_t);
+
 private:
     static constexpr EndpointId ENDPOINT_ID = 1;
 
@@ -55,6 +57,7 @@ private:
     MQTT::Valetudo mValetudo;
 
     void BatteryLevelCallback();
+    void CleanModeCallback();
     void IdentifyCallback();
     void StateCallback();
 

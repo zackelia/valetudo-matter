@@ -1,4 +1,5 @@
 #include "app-common/zap-generated/cluster-enums.h"
+#include "clusters/rvc-clean-mode.h"
 #include "lib/support/TypeTraits.h"
 #include "logger.h"
 #include "mqtt/valetudo.h"
@@ -34,6 +35,19 @@ CHIP_ERROR Valetudo::SetBatteryLevelCallback(std::function<void(void)> batteryLe
     return CHIP_NO_ERROR;
 }
 
+
+CHIP_ERROR Valetudo::SetCleanModeCallback(std::function<void(void)> cleanModeCallback)
+{
+    if (cleanModeCallback == nullptr)
+    {
+        ERROR("cleanModeCallback is nullptr");
+        chipDie();
+    }
+    mCleanModeCallback = cleanModeCallback;
+    return CHIP_NO_ERROR;
+}
+
+
 CHIP_ERROR Valetudo::SetStateCallback(std::function<void(void)> stateCallback)
 {
     if (stateCallback == nullptr)
@@ -49,6 +63,23 @@ CHIP_ERROR Valetudo::SetStateCallback(std::function<void(void)> stateCallback)
 CHIP_ERROR Valetudo::Locate()
 {
     return Publish("LocateCapability/locate/set", "PERFORM");
+}
+
+CHIP_ERROR Valetudo::SetCleanMode(uint8_t cleanMode)
+{
+    std::string data;
+    if (cleanMode == RvcCleanMode::ModeMop)
+        data = "mop";
+    else if (cleanMode == RvcCleanMode::ModeVacuum)
+        data = "vacuum";
+    else if (cleanMode == RvcCleanMode::ModeVacuumAndMop)
+        data = "vacuum_and_mop";
+    else
+    {
+        ERROR("Unknown mode: %d", cleanMode);
+        chipDie();
+    }
+    return Publish("OperationModeControlCapability/preset/set", data);
 }
 
 CHIP_ERROR Valetudo::Publish(const std::string & topic, const std::string & message)
@@ -78,6 +109,22 @@ void Valetudo::HandlePublish(const std::string & topic, const std::string & mess
         std::from_chars(message.data(), message.data() + message.size(), battery);
         mBatteryLevel = battery;
         return mBatteryLevelCallback();
+    }
+
+    if (topic_view.compare("OperationModeControlCapability/preset") == 0)
+    {
+        if (message.compare("mop") == 0)
+            mCleanMode = RvcCleanMode::ModeMop;
+        else if (message.compare("vacuum") == 0)
+            mCleanMode = RvcCleanMode::ModeVacuum;
+        else if (message.compare("vacuum_and_mop") == 0)
+            mCleanMode = RvcCleanMode::ModeVacuumAndMop;
+        else
+        {
+            ERROR("Unknown mode: %s", message.c_str());
+            chipDie();
+        }
+        return mCleanModeCallback();
     }
 
     if (topic_view.compare("StatusStateAttribute/status") == 0)

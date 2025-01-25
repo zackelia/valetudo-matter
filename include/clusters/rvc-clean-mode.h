@@ -10,9 +10,9 @@ namespace chip::app::Clusters
 namespace chip::app::Clusters::RvcCleanMode
 {
 
-const uint8_t ModeDeepClean = 0;
-const uint8_t ModeVacuum    = 1;
-const uint8_t ModeMop       = 2;
+const uint8_t ModeMop          = 0;
+const uint8_t ModeVacuum       = 1;
+const uint8_t ModeVacuumAndMop = 2;
 
 class RvcCleanModeDelegate : public ModeBase::Delegate
 {
@@ -31,20 +31,21 @@ public:
 
 private:
     using ModeTagStructType               = detail::Structs::ModeTagStruct::Type;
-    ModeTagStructType ModeTagsDeepClean[1]     = { { .value = to_underlying(ModeTag::kDeepClean) } };
-    ModeTagStructType ModeTagsVacuum[1] = { { .value = to_underlying(ModeTag::kVacuum) } };
     ModeTagStructType ModeTagsMop[1]  = { { .value = to_underlying(ModeTag::kMop) } };
+    ModeTagStructType ModeTagsVacuum[1] = { { .value = to_underlying(ModeTag::kVacuum) } };
+    ModeTagStructType ModeTagsVacuumAndMop[2]     = { { .value = to_underlying(ModeTag::kVacuum) },
+                                                      { .value = to_underlying(ModeTag::kMop) } };
 
     const detail::Structs::ModeOptionStruct::Type kModeOptions[3] = {
-        detail::Structs::ModeOptionStruct::Type{ .label    = CharSpan::fromCharString("Deep clean"),
-                                                 .mode     = ModeDeepClean,
-                                                 .modeTags = DataModel::List<const ModeTagStructType>(ModeTagsDeepClean) },
-        detail::Structs::ModeOptionStruct::Type{ .label    = CharSpan::fromCharString("Vacuum"),
-                                                 .mode     = ModeVacuum,
-                                                 .modeTags = DataModel::List<const ModeTagStructType>(ModeTagsVacuum) },
         detail::Structs::ModeOptionStruct::Type{ .label    = CharSpan::fromCharString("Mop"),
                                                  .mode     = ModeMop,
                                                  .modeTags = DataModel::List<const ModeTagStructType>(ModeTagsMop) },
+        detail::Structs::ModeOptionStruct::Type{ .label    = CharSpan::fromCharString("Vacuum"),
+                                                 .mode     = ModeVacuum,
+                                                 .modeTags = DataModel::List<const ModeTagStructType>(ModeTagsVacuum) },
+        detail::Structs::ModeOptionStruct::Type{ .label    = CharSpan::fromCharString("Vacuum and Mop"),
+                                                 .mode     = ModeVacuumAndMop,
+                                                 .modeTags = DataModel::List<const ModeTagStructType>(ModeTagsVacuumAndMop) },
     };
 
     RVC * mRvc = nullptr;

@@ -1,4 +1,7 @@
+#include "app-common/zap-generated/cluster-enums.h"
+#include "clusters/rvc-clean-mode.h"
 #include "lib/core/CHIPError.h"
+#include "lib/support/TypeTraits.h"
 #include "logger.h"
 #include "platform/CHIPDeviceLayer.h"
 #include "rvc.h"
@@ -36,6 +39,11 @@ CHIP_ERROR RVC::Init()
         return result;
     }
 
+    if ((result = mValetudo.SetCleanModeCallback(std::bind(&RVC::CleanModeCallback, this))) != CHIP_NO_ERROR)
+    {
+        return result;
+    }
+
     if ((result = mValetudo.SetStateCallback(std::bind(&RVC::StateCallback, this))) != CHIP_NO_ERROR)
     {
         return result;
@@ -55,6 +63,12 @@ void RVC::BatteryLevelCallback()
     chip::app::Clusters::PowerSource::Attributes::BatPercentRemaining::Set(1, mValetudo.GetBatteryLevel());
 }
 
+void RVC::CleanModeCallback()
+{
+    DEBUG("Setting CleanMode to %d", mValetudo.GetCleanMode());
+    mCleanModeInstance.UpdateCurrentMode(mValetudo.GetCleanMode());
+}
+
 void RVC::IdentifyCallback()
 {
     DEBUG("Identify RVC");
@@ -65,4 +79,9 @@ void RVC::StateCallback()
 {
     DEBUG("Setting OperationalState to %d", mValetudo.GetState().operationalStateID);
     mRvcOperationalStateInstance.SetOperationalState(mValetudo.GetState().operationalStateID);
+}
+
+void RVC::SetCleanMode(uint8_t cleanMode)
+{
+    mValetudo.SetCleanMode(cleanMode);
 }

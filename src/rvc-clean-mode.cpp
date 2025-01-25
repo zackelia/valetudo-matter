@@ -1,6 +1,7 @@
 #include "clusters/rvc-clean-mode.h"
 #include "logger.h"
 #include "app-common/zap-generated/callback.h"
+#include "rvc.h"
 
 using namespace chip;
 using namespace chip::app;
@@ -63,7 +64,8 @@ CHIP_ERROR RvcCleanModeDelegate::GetModeTagsByIndex(uint8_t modeIndex, DataModel
 void RvcCleanModeDelegate::HandleChangeToMode(uint8_t NewMode, ModeBase::Commands::ChangeToModeResponse::Type & response)
 {
     TRACE;
-    response.status = to_underlying(StatusCode::kCleaningInProgress);
+    // response.status = to_underlying(StatusCode::kCleaningInProgress);
+    mRvc->SetCleanMode(NewMode);
 }
 
 void RvcCleanModeDelegate::SetRVC(RVC * rvc)
