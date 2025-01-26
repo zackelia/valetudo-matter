@@ -39,26 +39,6 @@ CHIP_ERROR RVC::Init()
         return result;
     }
 
-    if ((result = mValetudo.SetBatteryLevelCallback(std::bind(&RVC::BatteryLevelCallback, this))) != CHIP_NO_ERROR)
-    {
-        return result;
-    }
-
-    if ((result = mValetudo.SetCleanModeCallback(std::bind(&RVC::CleanModeCallback, this))) != CHIP_NO_ERROR)
-    {
-        return result;
-    }
-
-    if ((result = mValetudo.SetStateCallback(std::bind(&RVC::StateCallback, this))) != CHIP_NO_ERROR)
-    {
-        return result;
-    }
-
-    if ((result = mValetudo.SetSupportedAreasCallback(std::bind(&RVC::SupportedAreasCallback, this))) != CHIP_NO_ERROR)
-    {
-        return result;
-    }
-
     return CHIP_NO_ERROR;
 }
 
@@ -67,42 +47,52 @@ void RVC::Shutdown()
     // TODO: Shutdown instances
 }
 
-void RVC::BatteryLevelCallback()
+void RVC::HandleCleanMode(uint8_t cleanMode, ModeBase::Commands::ChangeToModeResponse::Type & response)
 {
-    DEBUG("Setting BatPercentRemaining to %d", mValetudo.GetBatteryLevel());
-    chip::app::Clusters::PowerSource::Attributes::BatPercentRemaining::Set(1, mValetudo.GetBatteryLevel());
+    mValetudo.SetCleanMode(cleanMode);
 }
 
-void RVC::CleanModeCallback()
+void RVC::HandleGoHome(OperationalState::GenericOperationalError & err)
 {
-    DEBUG("Setting CleanMode to %d", mValetudo.GetCleanMode());
-    mCleanModeInstance.UpdateCurrentMode(mValetudo.GetCleanMode());
+    CHIP_ERROR error = mRvcOperationalStateInstance.SetOperationalState(to_underlying(RvcOperationalState::OperationalStateEnum::kSeekingCharger));
+
+    err.Set((error == CHIP_NO_ERROR) ? to_underlying(OperationalState::ErrorStateEnum::kNoError)
+                                        : to_underlying(OperationalState::ErrorStateEnum::kUnableToCompleteOperation));
+
+    // TODO: Control Valetudo
 }
 
-void RVC::IdentifyCallback()
+void RVC::HandleIdentify()
 {
     DEBUG("Identify RVC");
     mValetudo.Locate();
 }
 
-void RVC::StateCallback()
+void RVC::UpdateBatteryLevel(const uint8_t battery_level)
 {
-    DEBUG("Setting OperationalState to %d", mValetudo.GetState().operationalStateID);
-    mRvcOperationalStateInstance.SetOperationalState(mValetudo.GetState().operationalStateID);
+    DEBUG("Setting BatPercentRemaining to %d", battery_level);
+    chip::app::Clusters::PowerSource::Attributes::BatPercentRemaining::Set(ENDPOINT_ID, battery_level);
 }
 
-void RVC::SetCleanMode(uint8_t cleanMode)
+void RVC::UpdateCleanMode(const uint8_t clean_mode)
 {
-    mValetudo.SetCleanMode(cleanMode);
+    DEBUG("Setting CleanMode to %d", clean_mode);
+    mCleanModeInstance.UpdateCurrentMode(clean_mode);
 }
 
-void RVC::SupportedAreasCallback()
+void RVC::UpdateOperationalState(const uint8_t state)
+{
+    DEBUG("Setting OperationalState to %d", state);
+    mRvcOperationalStateInstance.SetOperationalState(state);
+}
+
+void RVC::UpdateSupportedAreas(const std::vector<std::string> & areas)
 {
     mServiceAreaInstance.ClearSelectedAreas();
 
-    for (size_t i = 0; i < mValetudo.GetSupportedAreas().size(); i++)
+    for (size_t i = 0; i < areas.size(); i++)
     {
-        const auto area = mValetudo.GetSupportedAreas()[i];
+        const auto area = areas[i];
         chip::Span<const char> span(area.data(), area.size());
         auto area_wrapper = ServiceArea::AreaStructureWrapper{}
             .SetAreaId(i)

@@ -56,8 +56,7 @@ void RvcOperationalStateDelegate::HandleResumeStateCallback(OperationalState::Ge
 void RvcOperationalStateDelegate::HandleGoHomeCommandCallback(OperationalState::GenericOperationalError & err)
 {
     TRACE;
-
-    mRvc->GoHome(err);
+    mRvc->HandleGoHome(err);
 }
 
 void RvcOperationalStateDelegate::SetRVC(RVC * rvc)

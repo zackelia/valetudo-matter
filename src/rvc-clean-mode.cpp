@@ -64,8 +64,7 @@ CHIP_ERROR RvcCleanModeDelegate::GetModeTagsByIndex(uint8_t modeIndex, DataModel
 void RvcCleanModeDelegate::HandleChangeToMode(uint8_t NewMode, ModeBase::Commands::ChangeToModeResponse::Type & response)
 {
     TRACE;
-    // response.status = to_underlying(StatusCode::kCleaningInProgress);
-    mRvc->SetCleanMode(NewMode);
+    mRvc->HandleCleanMode(NewMode, response);
 }
 
 void RvcCleanModeDelegate::SetRVC(RVC * rvc)

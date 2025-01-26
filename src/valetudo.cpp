@@ -8,6 +8,7 @@
 #include "mqtt/valetudo.h"
 #include <string_view>
 #include <charconv>
+#include "rvc.h"
 
 using namespace chip::app::Clusters;
 
@@ -24,52 +25,6 @@ CHIP_ERROR Valetudo::Init()
         return result;
     }
 
-    return CHIP_NO_ERROR;
-}
-
-CHIP_ERROR Valetudo::SetBatteryLevelCallback(std::function<void(void)> batteryLevelCallback)
-{
-    if (batteryLevelCallback == nullptr)
-    {
-        ERROR("batteryLevelCallback is nullptr");
-        chipDie();
-    }
-    mBatteryLevelCallback = batteryLevelCallback;
-    return CHIP_NO_ERROR;
-}
-
-
-CHIP_ERROR Valetudo::SetCleanModeCallback(std::function<void(void)> cleanModeCallback)
-{
-    if (cleanModeCallback == nullptr)
-    {
-        ERROR("cleanModeCallback is nullptr");
-        chipDie();
-    }
-    mCleanModeCallback = cleanModeCallback;
-    return CHIP_NO_ERROR;
-}
-
-
-CHIP_ERROR Valetudo::SetStateCallback(std::function<void(void)> stateCallback)
-{
-    if (stateCallback == nullptr)
-    {
-        ERROR("stateCallback is nullptr");
-        chipDie();
-    }
-    mStateCallback = stateCallback;
-    return CHIP_NO_ERROR;
-}
-
-CHIP_ERROR Valetudo::SetSupportedAreasCallback(std::function<void(void)> supportedAreasCallback)
-{
-    if (supportedAreasCallback == nullptr)
-    {
-        ERROR("supportedAreasCallback is nullptr");
-        chipDie();
-    }
-    mSupportedAreasCallback = supportedAreasCallback;
     return CHIP_NO_ERROR;
 }
 
@@ -121,7 +76,7 @@ void Valetudo::HandlePublish(const std::string & topic, const std::string & mess
         uint8_t battery;
         std::from_chars(message.data(), message.data() + message.size(), battery);
         mBatteryLevel = battery;
-        return mBatteryLevelCallback();
+        return mRvc->UpdateBatteryLevel(mBatteryLevel.value());
     }
 
     if (topic_view.compare("OperationModeControlCapability/preset") == 0)
@@ -137,27 +92,27 @@ void Valetudo::HandlePublish(const std::string & topic, const std::string & mess
             ERROR("Unknown mode: %s", message.c_str());
             chipDie();
         }
-        return mCleanModeCallback();
+        return mRvc->UpdateCleanMode(mCleanMode.value());
     }
 
     if (topic_view.compare("StatusStateAttribute/status") == 0)
     {
         if (message.compare("error") == 0)
-            mState = OperationalState::GenericOperationalState(chip::to_underlying(OperationalState::OperationalStateEnum::kError));
+            mOperationalState = OperationalState::GenericOperationalState(chip::to_underlying(OperationalState::OperationalStateEnum::kError)).operationalStateID;
         else if (message.compare("docked") == 0)
-            mState = OperationalState::GenericOperationalState(chip::to_underlying(RvcOperationalState::OperationalStateEnum::kDocked));
+            mOperationalState = OperationalState::GenericOperationalState(chip::to_underlying(RvcOperationalState::OperationalStateEnum::kDocked)).operationalStateID;
         else if (message.compare("returning") == 0)
-            mState = OperationalState::GenericOperationalState(chip::to_underlying(RvcOperationalState::OperationalStateEnum::kSeekingCharger));
+            mOperationalState = OperationalState::GenericOperationalState(chip::to_underlying(RvcOperationalState::OperationalStateEnum::kSeekingCharger)).operationalStateID;
         else if (message.compare("cleaning") == 0)
-            mState = OperationalState::GenericOperationalState(chip::to_underlying(OperationalState::OperationalStateEnum::kRunning));
+            mOperationalState = OperationalState::GenericOperationalState(chip::to_underlying(OperationalState::OperationalStateEnum::kRunning)).operationalStateID;
         else if (message.compare("paused") == 0)
-            mState = OperationalState::GenericOperationalState(chip::to_underlying(OperationalState::OperationalStateEnum::kPaused));
+            mOperationalState = OperationalState::GenericOperationalState(chip::to_underlying(OperationalState::OperationalStateEnum::kPaused)).operationalStateID;
         else
         {
             ERROR("Unknown state: %s", message.c_str());
             chipDie();
         }
-        return mStateCallback();
+        return mRvc->UpdateOperationalState(mOperationalState.value());
     }
 
     if (topic_view.compare("MapData/segments") == 0)
@@ -180,10 +135,15 @@ void Valetudo::HandlePublish(const std::string & topic, const std::string & mess
             values.push_back(root[key].asCString());
         }
         mSupportedAreas = values;
-        return mSupportedAreasCallback();
+        return mRvc->UpdateSupportedAreas(mSupportedAreas.value());
     }
 
     DEBUG("ValetudoPublish: %s, message: %s", topic_view.data(), message.data());
+}
+
+void Valetudo::SetRVC(RVC * rvc)
+{
+    mRvc = rvc;
 }
 
 }

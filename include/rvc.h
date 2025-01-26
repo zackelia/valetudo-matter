@@ -24,6 +24,11 @@ public:
         mRunModeInstance(&mRunModeDelegate, ENDPOINT_ID, RvcRunMode::Id, 0),
         mServiceAreaInstance(&mServiceAreaStorageDelegate, &mServiceAreaDelegate, ENDPOINT_ID, BitMask<ServiceArea::Feature>())
     {
+        // TODO: This is for convenience of not having a ton of callback
+        // setting. It does break the idea of encapsulation though. Should this
+        // be fixed? What about the cluster delegates?
+        mValetudo.SetRVC(this);
+
         mCleanModeDelegate.SetRVC(this);
         mRvcOperationalStateDelegate.SetRVC(this);
         mRunModeDelegate.SetRVC(this);
@@ -35,17 +40,23 @@ public:
     CHIP_ERROR Init();
     void Shutdown();
 
-    void GoHome(OperationalState::GenericOperationalError & err)
-    {
-        TRACE;
+    // ////////////////////////////////////////////////////////////////////////
+    // These are messages from a Matter client to update the state of Valetudo.
+    // ////////////////////////////////////////////////////////////////////////
 
-        CHIP_ERROR error = mRvcOperationalStateInstance.SetOperationalState(to_underlying(RvcOperationalState::OperationalStateEnum::kSeekingCharger));
+    void HandleCleanMode(uint8_t, ModeBase::Commands::ChangeToModeResponse::Type &);
+    void HandleGoHome(OperationalState::GenericOperationalError &);
+    void HandleIdentify();
 
-        err.Set((error == CHIP_NO_ERROR) ? to_underlying(OperationalState::ErrorStateEnum::kNoError)
-                                         : to_underlying(OperationalState::ErrorStateEnum::kUnableToCompleteOperation));
-    }
+    // ////////////////////////////////////////////////////////////////////////
+    // These are out-of-band messages from Valetudo to update the state of the
+    // Matter server.
+    // ////////////////////////////////////////////////////////////////////////
 
-    void SetCleanMode(uint8_t);
+    void UpdateBatteryLevel(uint8_t);
+    void UpdateCleanMode(uint8_t);
+    void UpdateOperationalState(uint8_t);
+    void UpdateSupportedAreas(const std::vector<std::string> &);
 
 private:
     static constexpr EndpointId ENDPOINT_ID = 1;
@@ -62,13 +73,6 @@ private:
     ServiceArea::Instance mServiceAreaInstance;
 
     MQTT::Valetudo mValetudo;
-
-    void BatteryLevelCallback();
-    void CleanModeCallback();
-    void IdentifyCallback();
-    void StateCallback();
-    void SupportedAreasCallback();
-
 };
 
 }
