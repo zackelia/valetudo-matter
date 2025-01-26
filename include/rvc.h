@@ -46,6 +46,8 @@ public:
 
     void HandleCleanMode(uint8_t, ModeBase::Commands::ChangeToModeResponse::Type &);
     void HandleGoHome(OperationalState::GenericOperationalError &);
+    void HandlePause(OperationalState::GenericOperationalError &);
+    void HandleResume(OperationalState::GenericOperationalError &);
     void HandleIdentify();
 
     // ////////////////////////////////////////////////////////////////////////
@@ -56,6 +58,7 @@ public:
     void UpdateBatteryLevel(uint8_t);
     void UpdateCleanMode(uint8_t);
     void UpdateOperationalState(uint8_t);
+    void UpdateOperationalError();
     void UpdateSupportedAreas(const std::vector<std::string> &);
 
 private:

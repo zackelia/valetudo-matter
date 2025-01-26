@@ -1,6 +1,7 @@
 #include "app-common/zap-generated/cluster-enums.h"
 #include "clusters/rvc-clean-mode.h"
 #include "lib/core/CHIPError.h"
+#include "lib/core/ErrorStr.h"
 #include "lib/support/TypeTraits.h"
 #include "logger.h"
 #include "platform/CHIPDeviceLayer.h"
@@ -54,12 +55,80 @@ void RVC::HandleCleanMode(uint8_t cleanMode, ModeBase::Commands::ChangeToModeRes
 
 void RVC::HandleGoHome(OperationalState::GenericOperationalError & err)
 {
-    CHIP_ERROR error = mRvcOperationalStateInstance.SetOperationalState(to_underlying(RvcOperationalState::OperationalStateEnum::kSeekingCharger));
+    switch (mRvcOperationalStateInstance.GetCurrentOperationalState())
+    {
+    case to_underlying(OperationalState::OperationalStateEnum::kStopped):
+    case to_underlying(OperationalState::OperationalStateEnum::kRunning):
+    case to_underlying(OperationalState::OperationalStateEnum::kPaused):
+    {
+        CHIP_ERROR error = mRvcOperationalStateInstance.SetOperationalState(to_underlying(RvcOperationalState::OperationalStateEnum::kSeekingCharger));
+        if (error != CHIP_NO_ERROR)
+        {
+            err.Set(to_underlying(OperationalState::ErrorStateEnum::kUnableToCompleteOperation));
+            return;
+        }
 
-    err.Set((error == CHIP_NO_ERROR) ? to_underlying(OperationalState::ErrorStateEnum::kNoError)
-                                        : to_underlying(OperationalState::ErrorStateEnum::kUnableToCompleteOperation));
+        error = mValetudo.Home();
+        err.Set((error == CHIP_NO_ERROR) ? to_underlying(OperationalState::ErrorStateEnum::kNoError)
+                                            : to_underlying(OperationalState::ErrorStateEnum::kUnableToCompleteOperation));
+        return;
+    }
+    default:
+        err.Set(to_underlying(OperationalState::ErrorStateEnum::kCommandInvalidInState));
+        return;
+    }
+}
 
-    // TODO: Control Valetudo
+void RVC::HandlePause(OperationalState::GenericOperationalError & err)
+{
+    switch (mRvcOperationalStateInstance.GetCurrentOperationalState())
+    {
+    case to_underlying(OperationalState::OperationalStateEnum::kRunning):
+    case to_underlying(RvcOperationalState::OperationalStateEnum::kSeekingCharger):
+    {
+        CHIP_ERROR error = mRvcOperationalStateInstance.SetOperationalState(to_underlying(OperationalState::OperationalStateEnum::kPaused));
+        if (error != CHIP_NO_ERROR)
+        {
+            err.Set(to_underlying(OperationalState::ErrorStateEnum::kUnableToCompleteOperation));
+            return;
+        }
+
+        error = mValetudo.Pause();
+        err.Set((error == CHIP_NO_ERROR) ? to_underlying(OperationalState::ErrorStateEnum::kNoError)
+                                            : to_underlying(OperationalState::ErrorStateEnum::kUnableToCompleteOperation));
+        return;
+    }
+    default:
+        err.Set(to_underlying(OperationalState::ErrorStateEnum::kCommandInvalidInState));
+        return;
+    }
+}
+
+void RVC::HandleResume(OperationalState::GenericOperationalError & err)
+{
+    switch (mRvcOperationalStateInstance.GetCurrentOperationalState())
+    {
+    case to_underlying(OperationalState::OperationalStateEnum::kStopped):
+    case to_underlying(OperationalState::OperationalStateEnum::kPaused):
+    case to_underlying(RvcOperationalState::OperationalStateEnum::kCharging):
+    case to_underlying(RvcOperationalState::OperationalStateEnum::kDocked):
+    {
+        CHIP_ERROR error = mRvcOperationalStateInstance.SetOperationalState(to_underlying(OperationalState::OperationalStateEnum::kPaused));
+        if (error != CHIP_NO_ERROR)
+        {
+            err.Set(to_underlying(OperationalState::ErrorStateEnum::kUnableToCompleteOperation));
+            return;
+        }
+
+        error = mValetudo.Start();
+        err.Set((error == CHIP_NO_ERROR) ? to_underlying(OperationalState::ErrorStateEnum::kNoError)
+                                            : to_underlying(OperationalState::ErrorStateEnum::kUnableToCompleteOperation));
+        return;
+    }
+    default:
+        err.Set(to_underlying(OperationalState::ErrorStateEnum::kCommandInvalidInState));
+        return;
+    }
 }
 
 void RVC::HandleIdentify()
@@ -84,6 +153,27 @@ void RVC::UpdateOperationalState(const uint8_t state)
 {
     DEBUG("Setting OperationalState to %d", state);
     mRvcOperationalStateInstance.SetOperationalState(state);
+}
+
+void RVC::UpdateOperationalError()
+{
+    detail::Structs::ErrorStateStruct::Type err;
+
+    if (mValetudo.GetDustBinInstalled().has_value() && !mValetudo.GetDustBinInstalled().value())
+        err.errorStateID = to_underlying(RvcOperationalState::ErrorStateEnum::kDustBinMissing);
+    else if (mValetudo.GetMopInstalled().has_value() && !mValetudo.GetMopInstalled().value())
+        err.errorStateID = to_underlying(RvcOperationalState::ErrorStateEnum::kMopCleaningPadMissing);
+    else if (mValetudo.GetWaterTankInstalled().has_value() && !mValetudo.GetWaterTankInstalled().value())
+        err.errorStateID = to_underlying(RvcOperationalState::ErrorStateEnum::kWaterTankMissing);
+    else
+    {
+        DEBUG("Clearing OperationalErrors");
+        mRunModeInstance.UpdateCurrentMode(RvcRunMode::ModeIdle);
+        return;
+    }
+
+    DEBUG("Setting OperationalError to %d", err.errorStateID);
+    mRvcOperationalStateInstance.OnOperationalErrorDetected(err);
 }
 
 void RVC::UpdateSupportedAreas(const std::vector<std::string> & areas)

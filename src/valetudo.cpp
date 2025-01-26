@@ -1,6 +1,7 @@
 #include "app-common/zap-generated/cluster-enums.h"
 #include "clusters/rvc-clean-mode.h"
 #include "json/json.h"
+#include "clusters/rvc-run-mode.h"
 #include "lib/support/CodeUtils.h"
 #include "lib/support/TypeTraits.h"
 #include "logger.h"
@@ -50,6 +51,21 @@ CHIP_ERROR Valetudo::SetCleanMode(uint8_t cleanMode)
     return Publish("OperationModeControlCapability/preset/set", data);
 }
 
+CHIP_ERROR Valetudo::Start()
+{
+    return Publish("BasicControlCapability/operation/set", "START");
+}
+
+CHIP_ERROR Valetudo::Pause()
+{
+    return Publish("BasicControlCapability/operation/set", "PAUSE");
+}
+
+CHIP_ERROR Valetudo::Home()
+{
+    return Publish("BasicControlCapability/operation/set", "HOME");
+}
+
 CHIP_ERROR Valetudo::Publish(const std::string & topic, const std::string & message)
 {
     std::string homie_topic = mPrefix + "/" + topic;
@@ -71,12 +87,65 @@ void Valetudo::HandlePublish(const std::string & topic, const std::string & mess
         DEBUG("Prefix is %s", mPrefix.c_str());
     }
 
+    if (topic_view.find('$') == std::string::npos && topic_view.compare("MapData/map-data") != 0)
+    {
+        DEBUG("ValetudoPublish: %s, message: %s", topic_view.data(), message.data());
+    }
+
+    if (topic_view.compare("AttachmentStateAttribute/dustbin") == 0)
+    {
+        if (message.compare("true") == 0)
+            mDustBinInstalled = true;
+        if (message.compare("false") == 0)
+            mDustBinInstalled = false;
+        return mRvc->UpdateOperationalError();
+    }
+
+    // TODO: Bug in Valetudo? These aren't getting published when changed and
+    // also just aren't correct...
+    if (topic_view.compare("AttachmentStateAttribute/mop") == 0)
+    {
+        if (message.compare("true") == 0)
+            mMopInstalled = true;
+        if (message.compare("false") == 0)
+            mMopInstalled = false;
+        return mRvc->UpdateOperationalError();
+    }
+
+    if (topic_view.compare("AttachmentStateAttribute/watertank") == 0)
+    {
+        if (message.compare("true") == 0)
+            mWaterTankInstalled = true;
+        if (message.compare("false") == 0)
+            mWaterTankInstalled = false;
+        return mRvc->UpdateOperationalError();
+    }
+
     if (topic_view.compare("BatteryStateAttribute/level") == 0)
     {
         uint8_t battery;
         std::from_chars(message.data(), message.data() + message.size(), battery);
         mBatteryLevel = battery;
         return mRvc->UpdateBatteryLevel(mBatteryLevel.value());
+    }
+
+    if (topic_view.compare("BatteryStateAttribute/status") == 0)
+    {
+        if (message.compare("charging") == 0)
+            mOperationalState = OperationalState::GenericOperationalState(chip::to_underlying(RvcOperationalState::OperationalStateEnum::kCharging)).operationalStateID;
+        else if (message.compare("charged") == 0)
+            mOperationalState = OperationalState::GenericOperationalState(chip::to_underlying(RvcOperationalState::OperationalStateEnum::kDocked)).operationalStateID;
+        else if (message.compare("none") == 0 || message.compare("discharging") == 0)
+        {
+            DEBUG("Ignoring BatteryStateAttribute/status of %s", message.c_str());
+            return;
+        }
+        else
+        {
+            ERROR("Unknown mode: %s", message.c_str());
+            chipDie();
+        }
+        return mRvc->UpdateOperationalState(mOperationalState.value());
     }
 
     if (topic_view.compare("OperationModeControlCapability/preset") == 0)
@@ -107,6 +176,11 @@ void Valetudo::HandlePublish(const std::string & topic, const std::string & mess
             mOperationalState = OperationalState::GenericOperationalState(chip::to_underlying(OperationalState::OperationalStateEnum::kRunning)).operationalStateID;
         else if (message.compare("paused") == 0)
             mOperationalState = OperationalState::GenericOperationalState(chip::to_underlying(OperationalState::OperationalStateEnum::kPaused)).operationalStateID;
+        else if (message.compare("idle") == 0 || message.compare("manual_control") == 0 || message.compare("moving") == 0)
+        {
+            DEBUG("Ignoring StatusStateAttribute/status of %s", message.c_str());
+            return;
+        }
         else
         {
             ERROR("Unknown state: %s", message.c_str());
@@ -137,8 +211,6 @@ void Valetudo::HandlePublish(const std::string & topic, const std::string & mess
         mSupportedAreas = values;
         return mRvc->UpdateSupportedAreas(mSupportedAreas.value());
     }
-
-    DEBUG("ValetudoPublish: %s, message: %s", topic_view.data(), message.data());
 }
 
 void Valetudo::SetRVC(RVC * rvc)

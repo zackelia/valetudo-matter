@@ -46,11 +46,13 @@ CHIP_ERROR RvcOperationalStateDelegate::GetOperationalPhaseAtIndex(size_t index,
 void RvcOperationalStateDelegate::HandlePauseStateCallback(OperationalState::GenericOperationalError & err)
 {
     TRACE;
+    mRvc->HandlePause(err);
 }
 
 void RvcOperationalStateDelegate::HandleResumeStateCallback(OperationalState::GenericOperationalError & err)
 {
     TRACE;
+    mRvc->HandleResume(err);
 }
 
 void RvcOperationalStateDelegate::HandleGoHomeCommandCallback(OperationalState::GenericOperationalError & err)
