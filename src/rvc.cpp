@@ -29,6 +29,11 @@ CHIP_ERROR RVC::Init()
         return result;
     }
 
+    if ((result = mServiceAreaInstance.Init()) != CHIP_NO_ERROR)
+    {
+        return result;
+    }
+
     if ((result = mValetudo.Init()) != CHIP_NO_ERROR)
     {
         return result;
@@ -45,6 +50,11 @@ CHIP_ERROR RVC::Init()
     }
 
     if ((result = mValetudo.SetStateCallback(std::bind(&RVC::StateCallback, this))) != CHIP_NO_ERROR)
+    {
+        return result;
+    }
+
+    if ((result = mValetudo.SetSupportedAreasCallback(std::bind(&RVC::SupportedAreasCallback, this))) != CHIP_NO_ERROR)
     {
         return result;
     }
@@ -84,4 +94,23 @@ void RVC::StateCallback()
 void RVC::SetCleanMode(uint8_t cleanMode)
 {
     mValetudo.SetCleanMode(cleanMode);
+}
+
+void RVC::SupportedAreasCallback()
+{
+    mServiceAreaInstance.ClearSelectedAreas();
+
+    for (size_t i = 0; i < mValetudo.GetSupportedAreas().size(); i++)
+    {
+        const auto area = mValetudo.GetSupportedAreas()[i];
+        chip::Span<const char> span(area.data(), area.size());
+        auto area_wrapper = ServiceArea::AreaStructureWrapper{}
+            .SetAreaId(i)
+            .SetLocationInfo(span, DataModel::NullNullable, DataModel::NullNullable);
+        if (!mServiceAreaInstance.AddSupportedArea(area_wrapper))
+        {
+            ERROR("Failed to add area");
+            chipDie();
+        }
+    }
 }

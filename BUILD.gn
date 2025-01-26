@@ -19,6 +19,8 @@ executable("valetudo-matter") {
     "src/rvc-clean-mode.cpp",
     "src/rvc-operational-state.cpp",
     "src/rvc-run-mode.cpp",
+    "src/rvc-service-area.cpp",
+    "src/rvc-service-area-storage.cpp",
     "src/socket.cpp",
     "src/valetudo.cpp",
   ]

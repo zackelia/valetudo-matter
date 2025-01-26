@@ -6,6 +6,8 @@
 #include "clusters/rvc-clean-mode.h"
 #include "clusters/rvc-operational-state.h"
 #include "clusters/rvc-run-mode.h"
+#include "clusters/rvc-service-area.h"
+#include "clusters/rvc-service-area-storage.h"
 #include "mqtt/valetudo.h"
 #include "logger.h"
 #include "socket.h"
@@ -19,11 +21,13 @@ public:
     RVC() :
         mCleanModeInstance(&mCleanModeDelegate, ENDPOINT_ID, RvcCleanMode::Id, 0),
         mRvcOperationalStateInstance(&mRvcOperationalStateDelegate, ENDPOINT_ID),
-        mRunModeInstance(&mRunModeDelegate, ENDPOINT_ID, RvcRunMode::Id, 0)
+        mRunModeInstance(&mRunModeDelegate, ENDPOINT_ID, RvcRunMode::Id, 0),
+        mServiceAreaInstance(&mServiceAreaStorageDelegate, &mServiceAreaDelegate, ENDPOINT_ID, BitMask<ServiceArea::Feature>())
     {
         mCleanModeDelegate.SetRVC(this);
         mRvcOperationalStateDelegate.SetRVC(this);
         mRunModeDelegate.SetRVC(this);
+        mServiceAreaDelegate.SetRVC(this);
 
         mRunModeInstance.UpdateCurrentMode(RvcRunMode::ModeIdle);
     }
@@ -49,10 +53,13 @@ private:
     RvcCleanMode::RvcCleanModeDelegate mCleanModeDelegate;
     RvcOperationalState::RvcOperationalStateDelegate mRvcOperationalStateDelegate;
     RvcRunMode::RvcRunModeDelegate mRunModeDelegate;
+    ServiceArea::RvcServiceAreaDelegate mServiceAreaDelegate;
+    ServiceArea::RvcServiceAreaStorageDelegate mServiceAreaStorageDelegate;
 
     ModeBase::Instance mCleanModeInstance;
     RvcOperationalState::Instance mRvcOperationalStateInstance;
     ModeBase::Instance mRunModeInstance;
+    ServiceArea::Instance mServiceAreaInstance;
 
     MQTT::Valetudo mValetudo;
 
@@ -60,6 +67,7 @@ private:
     void CleanModeCallback();
     void IdentifyCallback();
     void StateCallback();
+    void SupportedAreasCallback();
 
 };
 

@@ -1,7 +1,10 @@
 #include "app-common/zap-generated/cluster-enums.h"
 #include "clusters/rvc-clean-mode.h"
+#include "json/json.h"
+#include "lib/support/CodeUtils.h"
 #include "lib/support/TypeTraits.h"
 #include "logger.h"
+#include <memory>
 #include "mqtt/valetudo.h"
 #include <string_view>
 #include <charconv>
@@ -59,6 +62,16 @@ CHIP_ERROR Valetudo::SetStateCallback(std::function<void(void)> stateCallback)
     return CHIP_NO_ERROR;
 }
 
+CHIP_ERROR Valetudo::SetSupportedAreasCallback(std::function<void(void)> supportedAreasCallback)
+{
+    if (supportedAreasCallback == nullptr)
+    {
+        ERROR("supportedAreasCallback is nullptr");
+        chipDie();
+    }
+    mSupportedAreasCallback = supportedAreasCallback;
+    return CHIP_NO_ERROR;
+}
 
 CHIP_ERROR Valetudo::Locate()
 {
@@ -145,6 +158,29 @@ void Valetudo::HandlePublish(const std::string & topic, const std::string & mess
             chipDie();
         }
         return mStateCallback();
+    }
+
+    if (topic_view.compare("MapData/segments") == 0)
+    {
+        JSONCPP_STRING err;
+        Json::Value root;
+        Json::CharReaderBuilder builder;
+        const std::unique_ptr<Json::CharReader> reader(builder.newCharReader());
+        if (!reader->parse(message.c_str(), message.c_str() + message.length(), &root,
+                       &err))
+        {
+            ERROR("%s", err.c_str());
+            chipDie();
+        }
+
+        std::vector<std::string> keys = root.getMemberNames();
+        std::vector<std::string> values;
+        for (const auto& key : keys)
+        {
+            values.push_back(root[key].asCString());
+        }
+        mSupportedAreas = values;
+        return mSupportedAreasCallback();
     }
 
     DEBUG("ValetudoPublish: %s, message: %s", topic_view.data(), message.data());
