@@ -59,7 +59,7 @@ public:
     void UpdateCleanMode(uint8_t);
     void UpdateOperationalState(uint8_t);
     void UpdateOperationalError();
-    void UpdateSupportedAreas(const std::vector<std::string> &);
+    void UpdateSupportedAreas(const std::map<uint32_t, std::string> &);
 
 private:
     static constexpr EndpointId ENDPOINT_ID = 1;

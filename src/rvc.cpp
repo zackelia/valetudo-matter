@@ -120,9 +120,34 @@ void RVC::HandleResume(OperationalState::GenericOperationalError & err)
             return;
         }
 
-        error = mValetudo.Start();
+        std::vector<uint32_t> areas;
+        // Cannot modify segments while paused.
+        if (mRvcOperationalStateInstance.GetCurrentOperationalState() != to_underlying(OperationalState::OperationalStateEnum::kPaused))
+        {
+            for (uint32_t i = 0; i < mServiceAreaInstance.GetNumberOfSelectedAreas(); i++)
+            {
+                uint32_t area;
+                mServiceAreaInstance.GetSelectedAreaByIndex(i, area);
+                DEBUG("Selected room: %s", mValetudo.GetSupportedAreas().value()[area].c_str());
+                areas.push_back(area);
+            }
+        }
+
+        if (!areas.empty())
+            error = mValetudo.Start(areas);
+        else
+            error = mValetudo.Start();
+
         err.Set((error == CHIP_NO_ERROR) ? to_underlying(OperationalState::ErrorStateEnum::kNoError)
                                             : to_underlying(OperationalState::ErrorStateEnum::kUnableToCompleteOperation));
+
+        // Selected rooms are only valid for one run.
+        if (!mServiceAreaInstance.ClearSelectedAreas())
+        {
+            ERROR("Failed to clear selected areas.");
+            chipDie();
+        }
+
         return;
     }
     default:
@@ -176,16 +201,25 @@ void RVC::UpdateOperationalError()
     mRvcOperationalStateInstance.OnOperationalErrorDetected(err);
 }
 
-void RVC::UpdateSupportedAreas(const std::vector<std::string> & areas)
+void RVC::UpdateSupportedAreas(const std::map<uint32_t, std::string> & areas)
 {
-    mServiceAreaInstance.ClearSelectedAreas();
-
-    for (size_t i = 0; i < areas.size(); i++)
+    if (!mServiceAreaInstance.ClearSelectedAreas())
     {
-        const auto area = areas[i];
+        ERROR("Failed to clear selected areas.");
+        chipDie();
+    }
+
+    if (!mServiceAreaInstance.ClearSupportedAreas())
+    {
+        ERROR("Failed to clear supported areas.");
+        chipDie();
+    }
+
+    for (const auto & [id, area] : areas)
+    {
         chip::Span<const char> span(area.data(), area.size());
         auto area_wrapper = ServiceArea::AreaStructureWrapper{}
-            .SetAreaId(i)
+            .SetAreaId(id)
             .SetLocationInfo(span, DataModel::NullNullable, DataModel::NullNullable);
         if (!mServiceAreaInstance.AddSupportedArea(area_wrapper))
         {

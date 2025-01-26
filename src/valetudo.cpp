@@ -51,8 +51,23 @@ CHIP_ERROR Valetudo::SetCleanMode(uint8_t cleanMode)
     return Publish("OperationModeControlCapability/preset/set", data);
 }
 
-CHIP_ERROR Valetudo::Start()
+CHIP_ERROR Valetudo::Start(std::optional<std::vector<uint32_t>> area_ids)
 {
+    if (area_ids.has_value())
+    {
+        Json::Value root;
+        Json::Value segment_ids;
+
+        for (const auto & id : area_ids.value())
+            segment_ids.append(std::to_string(id));
+        root["segment_ids"] = segment_ids;
+
+        Json::StreamWriterBuilder builder;
+        std::string data = Json::writeString(builder, root);
+
+        return Publish("MapSegmentationCapability/clean/set", data);
+    }
+
     return Publish("BasicControlCapability/operation/set", "START");
 }
 
@@ -202,13 +217,20 @@ void Valetudo::HandlePublish(const std::string & topic, const std::string & mess
             chipDie();
         }
 
+        if (!mSupportedAreas.has_value())
+        {
+            mSupportedAreas = std::map<uint32_t, std::string>();
+        }
+
+        mSupportedAreas->clear();
+
         std::vector<std::string> keys = root.getMemberNames();
-        std::vector<std::string> values;
         for (const auto& key : keys)
         {
-            values.push_back(root[key].asCString());
+            uint32_t segment_id;
+            std::from_chars(key.data(), key.data() + key.size(), segment_id);
+            mSupportedAreas.value()[segment_id] = root[key].asCString();
         }
-        mSupportedAreas = values;
         return mRvc->UpdateSupportedAreas(mSupportedAreas.value());
     }
 }
