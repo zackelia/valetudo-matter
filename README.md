@@ -20,7 +20,7 @@ It is implemented as a separate C++ component for a few reasons:
 As of the time of writing, I have conducted the following testing:
 * Matter's `chip-tool` - this is where I have conducted nearly all of my testing of what I *think* other Matter controllers will do
 * Home Assistant - minimal testing as Matter 1.4 (includes room selection) is not supported yet for robot vacuum cleaners (RVCs)
-* Apple Home - RVC support is currently in iOS 18.4 beta which I am not wanting to install on my daily drivers. It is also unclear if it has Matter 1.2 or Matter 1.4 support
+* Apple Home - minimal testing, but so far so good, it has Matter 1.4!
 
 ## Development
 
