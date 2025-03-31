@@ -114,7 +114,7 @@ std::string consume_utf8(chip::Span<char> & buffer)
 }
 
 // TODO: Have a global malloc'd buffer that can dynamically grow when needed?
-static char gBuffer[8192];
+static char gBuffer[16384];
 
 CHIP_ERROR Broker::Publish(const std::string & topic, const std::string & message)
 {
