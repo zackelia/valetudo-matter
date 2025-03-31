@@ -18,7 +18,6 @@ using namespace chip::System;
 
 static void SocketCallback2(chip::System::SocketEvents events, intptr_t data)
 {
-    TRACE;
     auto _this = reinterpret_cast<Socket*>(data);
     _this->SocketCallback(events);
 }
@@ -151,7 +150,6 @@ Socket Socket::Accept()
 
 void Socket::SocketCallback(chip::System::SocketEvents events)
 {
-    TRACE;
     if (events.Has(SocketEventFlags::kRead))
     {
         if (mReadCallback == nullptr)
