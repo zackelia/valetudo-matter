@@ -19,7 +19,7 @@ CHIP_ERROR RvcCleanModeDelegate::GetModeLabelByIndex(uint8_t modeIndex, MutableC
 {
     TRACE;
 
-    if (modeIndex > ArraySize(kModeOptions))
+    if (modeIndex >= ArraySize(kModeOptions))
     {
         return CHIP_ERROR_PROVIDER_LIST_EXHAUSTED;
     }
@@ -31,7 +31,7 @@ CHIP_ERROR RvcCleanModeDelegate::GetModeValueByIndex(uint8_t modeIndex, uint8_t 
 {
     TRACE;
 
-    if (modeIndex > ArraySize(kModeOptions))
+    if (modeIndex >= ArraySize(kModeOptions))
     {
         return CHIP_ERROR_PROVIDER_LIST_EXHAUSTED;
     }
@@ -45,7 +45,7 @@ CHIP_ERROR RvcCleanModeDelegate::GetModeTagsByIndex(uint8_t modeIndex, DataModel
 {
     TRACE;
 
-    if (modeIndex > ArraySize(kModeOptions))
+    if (modeIndex >= ArraySize(kModeOptions))
     {
         return CHIP_ERROR_PROVIDER_LIST_EXHAUSTED;
     }
