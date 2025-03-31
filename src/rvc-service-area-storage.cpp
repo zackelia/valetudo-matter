@@ -110,8 +110,8 @@ bool RvcServiceAreaStorageDelegate::ClearSupportedAreasRaw()
         mSupportedAreas.clear();
         return true;
     }
-
-    return false;
+    // TODO: How does the example app return false here?
+    return true;
 }
 
 bool RvcServiceAreaStorageDelegate::RemoveSupportedAreaRaw(uint32_t areaId)
@@ -276,7 +276,8 @@ bool RvcServiceAreaStorageDelegate::ClearSelectedAreasRaw()
         return true;
     }
 
-    return false;
+    // TODO: How does the example app return false here?
+    return true;
 }
 
 bool RvcServiceAreaStorageDelegate::RemoveSelectedAreasRaw(uint32_t areaId)
