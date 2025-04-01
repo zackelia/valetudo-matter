@@ -3,6 +3,7 @@
 #include <app/clusters/mode-base-server/mode-base-server.h>
 #include <app/clusters/operational-state-server/operational-state-server.h>
 
+#include "app-common/zap-generated/cluster-enums.h"
 #include "clusters/rvc-clean-mode.h"
 #include "clusters/rvc-operational-state.h"
 #include "clusters/rvc-run-mode.h"
@@ -35,6 +36,7 @@ public:
         mServiceAreaDelegate.SetRVC(this);
 
         mRunModeInstance.UpdateCurrentMode(RvcRunMode::ModeIdle);
+        mRvcOperationalStateInstance.SetOperationalState(to_underlying(RvcOperationalState::OperationalStateEnum::kDocked));
     }
 
     CHIP_ERROR Init();
@@ -45,6 +47,7 @@ public:
     // ////////////////////////////////////////////////////////////////////////
 
     void HandleCleanMode(uint8_t, ModeBase::Commands::ChangeToModeResponse::Type &);
+    void HandleRunMode(uint8_t, ModeBase::Commands::ChangeToModeResponse::Type &);
     void HandleGoHome(OperationalState::GenericOperationalError &);
     void HandlePause(OperationalState::GenericOperationalError &);
     void HandleResume(OperationalState::GenericOperationalError &);

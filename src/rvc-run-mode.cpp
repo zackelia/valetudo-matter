@@ -6,6 +6,7 @@
 #include "logger.h"
 #include "lib/core/CHIPError.h"
 #include "lib/support/TypeTraits.h"
+#include "rvc.h"
 
 using namespace chip;
 using namespace chip::app;
@@ -68,7 +69,7 @@ CHIP_ERROR RvcRunModeDelegate::GetModeTagsByIndex(uint8_t modeIndex, DataModel::
 void RvcRunModeDelegate::HandleChangeToMode(uint8_t NewMode, ModeBase::Commands::ChangeToModeResponse::Type & response)
 {
     TRACE;
-    response.status = to_underlying(StatusCode::kBatteryLow);
+    mRvc->HandleRunMode(NewMode, response);
 }
 
 void RvcRunModeDelegate::SetRVC(RVC * rvc)

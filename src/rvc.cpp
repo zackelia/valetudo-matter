@@ -1,5 +1,7 @@
 #include "app-common/zap-generated/cluster-enums.h"
+#include "app/clusters/mode-base-server/mode-base-cluster-objects.h"
 #include "clusters/rvc-clean-mode.h"
+#include "clusters/rvc-run-mode.h"
 #include "lib/core/CHIPError.h"
 #include "lib/core/ErrorStr.h"
 #include "lib/support/TypeTraits.h"
@@ -51,6 +53,81 @@ void RVC::Shutdown()
 void RVC::HandleCleanMode(uint8_t cleanMode, ModeBase::Commands::ChangeToModeResponse::Type & response)
 {
     mValetudo.SetCleanMode(cleanMode);
+}
+
+void RVC::HandleRunMode(uint8_t targetMode, ModeBase::Commands::ChangeToModeResponse::Type & response)
+{
+    TRACE;
+    uint8_t currentState = mRvcOperationalStateInstance.GetCurrentOperationalState();
+    uint8_t currentMode  = mRunModeInstance.GetCurrentMode();
+    DEBUG("CurrentState: %d, CurrentMode: %d, TargetMode: %d", currentState, currentMode, targetMode);
+
+    if (targetMode == RvcRunMode::ModeCleaning)
+    {
+        if (currentState != to_underlying(OperationalState::OperationalStateEnum::kStopped) &&
+            currentState != to_underlying(RvcOperationalState::OperationalStateEnum::kDocked) && 
+            currentState != to_underlying(RvcOperationalState::OperationalStateEnum::kCharging))
+        {
+            response.status = to_underlying(ModeBase::StatusCode::kInvalidInMode);
+            response.statusText.SetValue(
+                chip::CharSpan::fromCharString("Change to the mapping or cleaning mode is only allowed from idle"));
+            return;
+        }
+
+        mRunModeInstance.UpdateCurrentMode(targetMode);
+        mRvcOperationalStateInstance.SetOperationalState(to_underlying(RvcOperationalState::OperationalStateEnum::kRunning));
+
+        // Selecting rooms is only valid when starting, not resuming.
+        std::vector<uint32_t> areas;
+        if (mRvcOperationalStateInstance.GetCurrentOperationalState() != to_underlying(OperationalState::OperationalStateEnum::kPaused))
+        {
+            for (uint32_t i = 0; i < mServiceAreaInstance.GetNumberOfSelectedAreas(); i++)
+            {
+                uint32_t area;
+                mServiceAreaInstance.GetSelectedAreaByIndex(i, area);
+                DEBUG("Selected room: %s", mValetudo.GetSupportedAreas().value()[area].c_str());
+                areas.push_back(area);
+            }
+        }
+
+        CHIP_ERROR error;
+        if (!areas.empty())
+            error = mValetudo.Start(areas);
+        else
+            error = mValetudo.Start();
+
+        if (error != CHIP_NO_ERROR)
+        {
+            response.status = to_underlying(ModeBase::StatusCode::kGenericFailure);
+            response.statusText.SetValue(chip::CharSpan::fromCharString("Failed to start vacuum"));
+            return;
+        }
+
+        response.status = to_underlying(ModeBase::StatusCode::kSuccess);
+    }
+    else if (targetMode == RvcRunMode::ModeIdle)
+    {
+        if (currentState == to_underlying(OperationalState::OperationalStateEnum::kRunning) ||
+            currentState == to_underlying(OperationalState::OperationalStateEnum::kPaused))
+        {
+            mRunModeInstance.UpdateCurrentMode(targetMode);
+            mRvcOperationalStateInstance.SetOperationalState(to_underlying(RvcOperationalState::OperationalStateEnum::kSeekingCharger));
+            mValetudo.Home();
+            response.status = to_underlying(ModeBase::StatusCode::kSuccess);
+        }
+        else
+        {
+            response.status = to_underlying(ModeBase::StatusCode::kInvalidInMode);
+            response.statusText.SetValue(
+                chip::CharSpan::fromCharString("Change to the mapping or cleaning mode is only allowed from idle"));
+            return;
+        }
+    }
+    else
+    {
+        response.status = to_underlying(ModeBase::StatusCode::kInvalidInMode);
+        response.statusText.SetValue(chip::CharSpan::fromCharString("This change is not allowed at this time"));
+    }
 }
 
 void RVC::HandleGoHome(OperationalState::GenericOperationalError & err)
@@ -120,23 +197,7 @@ void RVC::HandleResume(OperationalState::GenericOperationalError & err)
             return;
         }
 
-        std::vector<uint32_t> areas;
-        // Cannot modify segments while paused.
-        if (mRvcOperationalStateInstance.GetCurrentOperationalState() != to_underlying(OperationalState::OperationalStateEnum::kPaused))
-        {
-            for (uint32_t i = 0; i < mServiceAreaInstance.GetNumberOfSelectedAreas(); i++)
-            {
-                uint32_t area;
-                mServiceAreaInstance.GetSelectedAreaByIndex(i, area);
-                DEBUG("Selected room: %s", mValetudo.GetSupportedAreas().value()[area].c_str());
-                areas.push_back(area);
-            }
-        }
-
-        if (!areas.empty())
-            error = mValetudo.Start(areas);
-        else
-            error = mValetudo.Start();
+        error = mValetudo.Start();
 
         err.Set((error == CHIP_NO_ERROR) ? to_underlying(OperationalState::ErrorStateEnum::kNoError)
                                             : to_underlying(OperationalState::ErrorStateEnum::kUnableToCompleteOperation));
