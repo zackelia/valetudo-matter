@@ -2,5 +2,6 @@
     "clangd.path": "/usr/local/bin/clangd",
     "clangd.arguments": [
         "--compile-commands-dir=${workspaceFolder}/out/host/"
-    ]
+    ],
+    "cmake.configureOnOpen": false,
 }
