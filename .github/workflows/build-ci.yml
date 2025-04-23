@@ -1,0 +1,41 @@
+name: Build CI
+
+on:
+  push:
+    branches: [ "main" ]
+    paths-ignore:
+      - '**.md'
+  pull_request:
+    branches: [ "main" ]
+    paths-ignore:
+      - '**.md'
+
+jobs:
+  build-x86_64:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build host image
+        run: docker build --file docker/host.Dockerfile --tag valetudo-matter:$(date +%s) docker
+
+      - name: Build cross image
+        run: |
+          tag=$(date +%s)
+          docker build --file docker/arm64-cross.Dockerfile --tag valetudo-matter-cross:$tag docker
+          docker run --rm valetudo-matter-cross:$tag cat /valetudo-matter > valetudo-matter
+          chmod +x valetudo-matter
+
+      - name: Archive cross binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: arm64-valetudo-matter
+          path: valetudo-matter
+
+  build-arm64:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build host image
+        run: docker build --file docker/host.Dockerfile --tag valetudo-matter:$(date +%s) docker
