@@ -4,9 +4,6 @@ FROM ubuntu:jammy
 
 RUN apt update && \
     DEBIAN_FRONTEND=noninteractive apt install -y \
-    clang \
-    clangd \
-    cmake \
     git \
     python3 \
     python3-pip \
@@ -24,8 +21,15 @@ RUN apt update && \
     libgirepository1.0-dev \
     libcairo2-dev \
     libreadline-dev \
-    sudo
+    sudo \
+    wget
 
+ENV CLANGD_VERSION=20.1.0
+RUN wget --directory-prefix=/tmp https://github.com/clangd/clangd/releases/download/${CLANGD_VERSION}/clangd-linux-${CLANGD_VERSION}.zip && \
+    unzip /tmp/clangd-linux-${CLANGD_VERSION}.zip -d /tmp && \
+    mv /tmp/clangd_${CLANGD_VERSION}/bin/* /usr/local/bin/ && \
+    mv /tmp/clangd_${CLANGD_VERSION}/lib/* /usr/local/lib/ && \
+    rm -rf /tmp/clangd*
 
 ARG USER_NAME=user
 ARG USER_UID=1000
