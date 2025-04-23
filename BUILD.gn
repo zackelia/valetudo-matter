@@ -7,6 +7,7 @@ config("config") {
 
 ldflags = [
   "-fuse-ld=lld",
+  "-static-libstdc++"
 ]
 
 executable("valetudo-matter") {

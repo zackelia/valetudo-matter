@@ -32,6 +32,7 @@ Personal notes on building/running this project before I formalize it better.
 git submodule update --init
 cd third_party/connectedhomeip
 git submodule update --init --recursive -- \
+    third_party/boringssl \
     third_party/pigweed \
     third_party/jsoncpp \
     third_party/nlassert \
