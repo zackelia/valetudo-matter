@@ -51,7 +51,7 @@ FROM ubuntu:jammy
 RUN apt update && \
     DEBIAN_FRONTEND=noninteractive apt install -y \
         libglib2.0-0 && \
-    mkdir /var/chip
+    mkdir -p /data/chip
 
 COPY --from=builder /valetudo-matter/out/host/valetudo-matter /valetudo-matter
 

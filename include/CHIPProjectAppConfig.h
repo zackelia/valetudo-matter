@@ -30,5 +30,11 @@
 // include the CHIPProjectConfig from config/standalone
 #include <CHIPProjectConfig.h>
 
+#define CHIP_DIR "/data/chip"
+#define FATCONFDIR CHIP_DIR
+#define SYSCONFDIR CHIP_DIR
+#define LOCALSTATEDIR CHIP_DIR
+#define CHIP_CONFIG_KVS_PATH CHIP_DIR "/chip_kvs"
+
 #define CHIP_DEVICE_CONFIG_DEVICE_TYPE 116 // 0x0074 = 116 = Matter Robotic Vacuum Cleaner
 #define CHIP_DEVICE_CONFIG_DEVICE_NAME "Test RVC"

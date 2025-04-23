@@ -1,6 +1,9 @@
 #include <AppMain.h>
+#include <filesystem>
 #include <memory>
+#include <system_error>
 
+#include "CHIPProjectAppConfig.h"
 #include "logger.h"
 #include "rvc.h"
 
@@ -24,8 +27,32 @@ void ApplicationShutdown()
     rvc.reset();
 }
 
+int bootstrap()
+{
+    std::filesystem::path chip_dir = CHIP_DIR;
+    if (std::filesystem::exists(chip_dir))
+    {
+        return 0;
+    }
+
+    std::error_code err;
+    if (!std::filesystem::create_directories(chip_dir, err))
+    {
+        ERROR("Could not create %s: %s", chip_dir.c_str(), err.message().c_str());
+        return -1;
+    }
+
+    DEBUG("Created CHIP_DIR: %s", chip_dir.c_str());
+    return 0;
+}
+
 int main(int argc, char * argv[])
 {
+    if (bootstrap() != 0)
+    {
+        return -1;
+    }
+
     if (ChipLinuxAppInit(argc, argv) != 0)
     {
         return -1;
