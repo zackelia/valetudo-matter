@@ -5,8 +5,8 @@
 #include <unistd.h>
 
 #include <platform/CHIPDeviceLayer.h>
-#include <system/SystemLayerImpl.h>
 #include <system/SystemLayer.h>
+#include <system/SystemLayerImpl.h>
 
 #include "logger.h"
 #include "socket.h"
@@ -17,7 +17,7 @@ using namespace chip::System;
 
 static void SocketCallback2(chip::System::SocketEvents events, intptr_t data)
 {
-    auto _this = reinterpret_cast<Socket*>(data);
+    auto _this = reinterpret_cast<Socket *>(data);
     _this->SocketCallback(events);
 }
 
@@ -29,13 +29,14 @@ CHIP_ERROR Socket::Init()
     if (mSockFd == -1)
     {
         ERROR("Failed to create socket: %s", strerror(errno));
-        return CHIP_ERROR_NOT_CONNECTED; 
+        return CHIP_ERROR_NOT_CONNECTED;
     }
 
     int opt = 1;
-    if (::setsockopt(mSockFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
+    if (::setsockopt(mSockFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)))
+    {
         ERROR("Failed to set reuseaddr: %s", strerror(errno));
-        return CHIP_ERROR_NOT_CONNECTED; 
+        return CHIP_ERROR_NOT_CONNECTED;
     }
 
     struct sockaddr_in server_addr = {};
@@ -114,7 +115,6 @@ Socket & Socket::operator=(Socket && other)
     return *this;
 }
 
-
 ssize_t Socket::Recv(void * buffer, size_t len, int flags)
 {
     return ::recv(mSockFd, buffer, len, flags);
@@ -125,11 +125,9 @@ ssize_t Socket::Send(const void * buffer, size_t len, int flags)
     return ::send(mSockFd, buffer, len, flags);
 }
 
-Socket::Socket(int fd)
-    : mSockFd(fd)
+Socket::Socket(int fd) : mSockFd(fd)
 {
 }
-
 
 Socket Socket::Accept()
 {
@@ -137,7 +135,7 @@ Socket Socket::Accept()
     int addrlen = sizeof(address);
     int fd;
 
-    if ((fd = ::accept(mSockFd, (struct sockaddr *)&address, (socklen_t*)&addrlen)) == -1)
+    if ((fd = ::accept(mSockFd, (struct sockaddr *)&address, (socklen_t *)&addrlen)) == -1)
     {
         ERROR("Failed to accept: %s", strerror(errno));
         chipDie();
@@ -145,7 +143,6 @@ Socket Socket::Accept()
 
     return Socket(fd);
 }
-
 
 void Socket::SocketCallback(chip::System::SocketEvents events)
 {
@@ -190,7 +187,8 @@ CHIP_ERROR Socket::SetReadCallback(std::function<void(void)> readCallback)
             return result;
         }
 
-        result = DeviceLayer::SystemLayerSockets().SetCallback(mSocketWatchToken, SocketCallback2, reinterpret_cast<intptr_t>(this));
+        result = DeviceLayer::SystemLayerSockets().SetCallback(mSocketWatchToken, SocketCallback2,
+                                                               reinterpret_cast<intptr_t>(this));
         if (result != CHIP_NO_ERROR)
         {
             ERROR("Could not set callback");
@@ -215,7 +213,8 @@ CHIP_ERROR Socket::SetWriteCallback(std::function<void(void)> writeCallback)
             return result;
         }
 
-        result = DeviceLayer::SystemLayerSockets().SetCallback(mSocketWatchToken, SocketCallback2, reinterpret_cast<intptr_t>(this));
+        result = DeviceLayer::SystemLayerSockets().SetCallback(mSocketWatchToken, SocketCallback2,
+                                                               reinterpret_cast<intptr_t>(this));
         if (result != CHIP_NO_ERROR)
         {
             ERROR("Could not set callback");
@@ -226,4 +225,3 @@ CHIP_ERROR Socket::SetWriteCallback(std::function<void(void)> writeCallback)
     mWriteCallback = writeCallback;
     return DeviceLayer::SystemLayerSockets().RequestCallbackOnPendingWrite(mSocketWatchToken);
 }
-

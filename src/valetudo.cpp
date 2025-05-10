@@ -1,20 +1,19 @@
+#include "mqtt/valetudo.h"
 #include "app-common/zap-generated/cluster-enums.h"
 #include "clusters/rvc-clean-mode.h"
-#include "json/reader.h"
-#include "json/writer.h"
-#include "json/value.h"
 #include "clusters/rvc-run-mode.h"
 #include "lib/support/CodeUtils.h"
 #include "lib/support/TypeTraits.h"
 #include "logger.h"
-#include <memory>
-#include "mqtt/valetudo.h"
-#include <string_view>
-#include <charconv>
 #include "rvc.h"
+#include "json/reader.h"
+#include "json/value.h"
+#include "json/writer.h"
+#include <charconv>
+#include <memory>
+#include <string_view>
 
 using namespace chip::app::Clusters;
-
 
 namespace MQTT
 {
@@ -23,7 +22,8 @@ CHIP_ERROR Valetudo::Init()
 {
     CHIP_ERROR result;
 
-    if ((result = mBroker.Init(std::bind(&Valetudo::HandlePublish, this, std::placeholders::_1, std::placeholders::_2))) != CHIP_NO_ERROR)
+    if ((result = mBroker.Init(
+             std::bind(&Valetudo::HandlePublish, this, std::placeholders::_1, std::placeholders::_2))) != CHIP_NO_ERROR)
     {
         return result;
     }
@@ -149,9 +149,13 @@ void Valetudo::HandlePublish(const std::string & topic, const std::string & mess
     if (topic_view.compare("BatteryStateAttribute/status") == 0)
     {
         if (message.compare("charging") == 0)
-            mOperationalState = OperationalState::GenericOperationalState(chip::to_underlying(RvcOperationalState::OperationalStateEnum::kCharging)).operationalStateID;
+            mOperationalState = OperationalState::GenericOperationalState(
+                                    chip::to_underlying(RvcOperationalState::OperationalStateEnum::kCharging))
+                                    .operationalStateID;
         else if (message.compare("charged") == 0)
-            mOperationalState = OperationalState::GenericOperationalState(chip::to_underlying(RvcOperationalState::OperationalStateEnum::kDocked)).operationalStateID;
+            mOperationalState = OperationalState::GenericOperationalState(
+                                    chip::to_underlying(RvcOperationalState::OperationalStateEnum::kDocked))
+                                    .operationalStateID;
         else if (message.compare("none") == 0 || message.compare("discharging") == 0)
         {
             DEBUG("Ignoring BatteryStateAttribute/status of %s", message.c_str());
@@ -184,16 +188,27 @@ void Valetudo::HandlePublish(const std::string & topic, const std::string & mess
     if (topic_view.compare("StatusStateAttribute/status") == 0)
     {
         if (message.compare("error") == 0)
-            mOperationalState = OperationalState::GenericOperationalState(chip::to_underlying(OperationalState::OperationalStateEnum::kError)).operationalStateID;
+            mOperationalState = OperationalState::GenericOperationalState(
+                                    chip::to_underlying(OperationalState::OperationalStateEnum::kError))
+                                    .operationalStateID;
         else if (message.compare("docked") == 0)
-            mOperationalState = OperationalState::GenericOperationalState(chip::to_underlying(RvcOperationalState::OperationalStateEnum::kDocked)).operationalStateID;
+            mOperationalState = OperationalState::GenericOperationalState(
+                                    chip::to_underlying(RvcOperationalState::OperationalStateEnum::kDocked))
+                                    .operationalStateID;
         else if (message.compare("returning") == 0)
-            mOperationalState = OperationalState::GenericOperationalState(chip::to_underlying(RvcOperationalState::OperationalStateEnum::kSeekingCharger)).operationalStateID;
+            mOperationalState = OperationalState::GenericOperationalState(
+                                    chip::to_underlying(RvcOperationalState::OperationalStateEnum::kSeekingCharger))
+                                    .operationalStateID;
         else if (message.compare("cleaning") == 0)
-            mOperationalState = OperationalState::GenericOperationalState(chip::to_underlying(OperationalState::OperationalStateEnum::kRunning)).operationalStateID;
+            mOperationalState = OperationalState::GenericOperationalState(
+                                    chip::to_underlying(OperationalState::OperationalStateEnum::kRunning))
+                                    .operationalStateID;
         else if (message.compare("paused") == 0)
-            mOperationalState = OperationalState::GenericOperationalState(chip::to_underlying(OperationalState::OperationalStateEnum::kPaused)).operationalStateID;
-        else if (message.compare("idle") == 0 || message.compare("manual_control") == 0 || message.compare("moving") == 0)
+            mOperationalState = OperationalState::GenericOperationalState(
+                                    chip::to_underlying(OperationalState::OperationalStateEnum::kPaused))
+                                    .operationalStateID;
+        else if (message.compare("idle") == 0 || message.compare("manual_control") == 0 ||
+                 message.compare("moving") == 0)
         {
             DEBUG("Ignoring StatusStateAttribute/status of %s", message.c_str());
             return;
@@ -212,8 +227,7 @@ void Valetudo::HandlePublish(const std::string & topic, const std::string & mess
         Json::Value root;
         Json::CharReaderBuilder builder;
         const std::unique_ptr<Json::CharReader> reader(builder.newCharReader());
-        if (!reader->parse(message.c_str(), message.c_str() + message.length(), &root,
-                       &err))
+        if (!reader->parse(message.c_str(), message.c_str() + message.length(), &root, &err))
         {
             ERROR("%s", err.c_str());
             chipDie();
@@ -227,7 +241,7 @@ void Valetudo::HandlePublish(const std::string & topic, const std::string & mess
         mSupportedAreas->clear();
 
         std::vector<std::string> keys = root.getMemberNames();
-        for (const auto& key : keys)
+        for (const auto & key : keys)
         {
             uint32_t segment_id;
             std::from_chars(key.data(), key.data() + key.size(), segment_id);

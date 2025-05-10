@@ -1,5 +1,5 @@
-#include <app-common/zap-generated/cluster-objects.h>
 #include "app-common/zap-generated/cluster-enums.h"
+#include <app-common/zap-generated/cluster-objects.h>
 
 #include "clusters/rvc-service-area.h"
 #include "logger.h"
@@ -16,7 +16,8 @@ bool RvcServiceAreaDelegate::IsSetSelectedAreasAllowed(MutableCharSpan & statusT
     return true;
 }
 
-bool RvcServiceAreaDelegate::IsValidSelectAreasSet(const Span<const uint32_t> &selectedAreas, SelectAreasStatus &locationStatus, MutableCharSpan &statusText)
+bool RvcServiceAreaDelegate::IsValidSelectAreasSet(const Span<const uint32_t> & selectedAreas,
+                                                   SelectAreasStatus & locationStatus, MutableCharSpan & statusText)
 {
     // TODO: Verify?
     return true;

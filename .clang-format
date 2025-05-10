@@ -1,0 +1,5 @@
+BasedOnStyle: Microsoft
+FixNamespaceComments: false
+InsertNewlineAtEOF: true
+PointerAlignment: Middle
+ReflowComments: Never

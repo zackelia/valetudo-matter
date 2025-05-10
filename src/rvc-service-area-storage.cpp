@@ -85,7 +85,8 @@ bool RvcServiceAreaStorageDelegate::AddSupportedAreaRaw(const AreaStructureWrapp
     return false;
 }
 
-bool RvcServiceAreaStorageDelegate::ModifySupportedAreaRaw(uint32_t listIndex, const AreaStructureWrapper & modifiedArea)
+bool RvcServiceAreaStorageDelegate::ModifySupportedAreaRaw(uint32_t listIndex,
+                                                           const AreaStructureWrapper & modifiedArea)
 {
     // The server instance (caller) is responsible for ensuring that there are no duplicate area IDs, list size not exceeded,
     // etc.
@@ -93,8 +94,8 @@ bool RvcServiceAreaStorageDelegate::ModifySupportedAreaRaw(uint32_t listIndex, c
     // Double-check that areaID's match.
     if (modifiedArea.areaID != mSupportedAreas[listIndex].areaID)
     {
-        ChipLogError(Zcl, "ModifySupportedAreaRaw - areaID's do not match, new areaID %u, existing areaID %u", modifiedArea.areaID,
-                     mSupportedAreas[listIndex].areaID);
+        ChipLogError(Zcl, "ModifySupportedAreaRaw - areaID's do not match, new areaID %u, existing areaID %u",
+                     modifiedArea.areaID, mSupportedAreas[listIndex].areaID);
         return false;
     }
 
@@ -147,7 +148,8 @@ bool RvcServiceAreaStorageDelegate::GetSupportedMapByIndex(uint32_t listIndex, M
     return false;
 };
 
-bool RvcServiceAreaStorageDelegate::GetSupportedMapById(uint32_t aMapId, uint32_t & listIndex, MapStructureWrapper & aSupportedMap)
+bool RvcServiceAreaStorageDelegate::GetSupportedMapById(uint32_t aMapId, uint32_t & listIndex,
+                                                        MapStructureWrapper & aSupportedMap)
 {
     // We do not need to reimplement this method as it's already done by the SDK.
     // We are reimplementing this method, still using linear search, but with some optimization on the SDK implementation
@@ -195,8 +197,8 @@ bool RvcServiceAreaStorageDelegate::ModifySupportedMapRaw(uint32_t listIndex, co
     // Double-check that mapID's match.
     if (modifiedMap.mapID != mSupportedMaps[listIndex].mapID)
     {
-        ChipLogError(Zcl, "ModifySupportedMapRaw - mapID's do not match, new mapID %u, existing mapID %u", modifiedMap.mapID,
-                     mSupportedMaps[listIndex].mapID);
+        ChipLogError(Zcl, "ModifySupportedMapRaw - mapID's do not match, new mapID %u, existing mapID %u",
+                     modifiedMap.mapID, mSupportedMaps[listIndex].mapID);
         return false;
     }
 
@@ -302,7 +304,8 @@ uint32_t RvcServiceAreaStorageDelegate::GetNumberOfProgressElements()
     return static_cast<uint32_t>(mProgressList.size());
 }
 
-bool RvcServiceAreaStorageDelegate::GetProgressElementByIndex(uint32_t listIndex, Structs::ProgressStruct::Type & aProgressElement)
+bool RvcServiceAreaStorageDelegate::GetProgressElementByIndex(uint32_t listIndex,
+                                                              Structs::ProgressStruct::Type & aProgressElement)
 {
     if (listIndex < mProgressList.size())
     {
@@ -349,14 +352,14 @@ bool RvcServiceAreaStorageDelegate::AddProgressElementRaw(const Structs::Progres
         listIndex = static_cast<uint32_t>(mProgressList.size()) - 1; // new element is last in list
         return true;
     }
-    ChipLogError(Zcl, "AddProgressElementRaw %u -progress list is already at maximum size %u", newProgressElement.areaID,
-                 static_cast<uint32_t>(kMaxNumProgressElements));
+    ChipLogError(Zcl, "AddProgressElementRaw %u -progress list is already at maximum size %u",
+                 newProgressElement.areaID, static_cast<uint32_t>(kMaxNumProgressElements));
 
     return false;
 }
 
-bool RvcServiceAreaStorageDelegate::ModifyProgressElementRaw(uint32_t listIndex,
-                                                             const Structs::ProgressStruct::Type & modifiedProgressElement)
+bool RvcServiceAreaStorageDelegate::ModifyProgressElementRaw(
+    uint32_t listIndex, const Structs::ProgressStruct::Type & modifiedProgressElement)
 {
     if (modifiedProgressElement.areaID != mProgressList[listIndex].areaID)
     {

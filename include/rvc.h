@@ -7,8 +7,8 @@
 #include "clusters/rvc-clean-mode.h"
 #include "clusters/rvc-operational-state.h"
 #include "clusters/rvc-run-mode.h"
-#include "clusters/rvc-service-area.h"
 #include "clusters/rvc-service-area-storage.h"
+#include "clusters/rvc-service-area.h"
 #include "mqtt/valetudo.h"
 
 namespace chip::app::Clusters
@@ -16,12 +16,13 @@ namespace chip::app::Clusters
 
 class RVC
 {
-public:
-    RVC() :
-        mCleanModeInstance(&mCleanModeDelegate, ENDPOINT_ID, RvcCleanMode::Id, 0),
-        mRvcOperationalStateInstance(&mRvcOperationalStateDelegate, ENDPOINT_ID),
-        mRunModeInstance(&mRunModeDelegate, ENDPOINT_ID, RvcRunMode::Id, 0),
-        mServiceAreaInstance(&mServiceAreaStorageDelegate, &mServiceAreaDelegate, ENDPOINT_ID, BitMask<ServiceArea::Feature>())
+  public:
+    RVC()
+        : mCleanModeInstance(&mCleanModeDelegate, ENDPOINT_ID, RvcCleanMode::Id, 0),
+          mRvcOperationalStateInstance(&mRvcOperationalStateDelegate, ENDPOINT_ID),
+          mRunModeInstance(&mRunModeDelegate, ENDPOINT_ID, RvcRunMode::Id, 0),
+          mServiceAreaInstance(&mServiceAreaStorageDelegate, &mServiceAreaDelegate, ENDPOINT_ID,
+                               BitMask<ServiceArea::Feature>())
     {
         // TODO: This is for convenience of not having a ton of callback
         // setting. It does break the idea of encapsulation though. Should this
@@ -34,7 +35,8 @@ public:
         mServiceAreaDelegate.SetRVC(this);
 
         mRunModeInstance.UpdateCurrentMode(RvcRunMode::ModeIdle);
-        mRvcOperationalStateInstance.SetOperationalState(to_underlying(RvcOperationalState::OperationalStateEnum::kDocked));
+        mRvcOperationalStateInstance.SetOperationalState(
+            to_underlying(RvcOperationalState::OperationalStateEnum::kDocked));
     }
 
     CHIP_ERROR Init();
@@ -62,7 +64,7 @@ public:
     void UpdateOperationalError();
     void UpdateSupportedAreas(const std::map<uint32_t, std::string> &);
 
-private:
+  private:
     static constexpr EndpointId ENDPOINT_ID = 1;
 
     RvcCleanMode::RvcCleanModeDelegate mCleanModeDelegate;

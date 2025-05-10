@@ -23,18 +23,19 @@
 #include <cstring>
 #include <vector>
 
-namespace chip::app::Clusters::ServiceArea {
+namespace chip::app::Clusters::ServiceArea
+{
 
 class RvcServiceAreaStorageDelegate : public StorageDelegate
 {
-private:
+  private:
     // containers for array attributes.
     std::vector<ServiceArea::AreaStructureWrapper> mSupportedAreas;
     std::vector<ServiceArea::MapStructureWrapper> mSupportedMaps;
     std::vector<uint32_t> mSelectedAreas;
     std::vector<ServiceArea::Structs::ProgressStruct::Type> mProgressList;
 
-public:
+  public:
     //*************************************************************************
     // Supported Areas accessors
 
@@ -59,7 +60,8 @@ public:
 
     bool GetSupportedMapByIndex(uint32_t listIndex, ServiceArea::MapStructureWrapper & supportedMap) override;
 
-    bool GetSupportedMapById(uint32_t aMapId, uint32_t & listIndex, ServiceArea::MapStructureWrapper & supportedMap) override;
+    bool GetSupportedMapById(uint32_t aMapId, uint32_t & listIndex,
+                             ServiceArea::MapStructureWrapper & supportedMap) override;
 
     bool AddSupportedMapRaw(const MapStructureWrapper & newMap, uint32_t & listIndex) override;
 
@@ -87,14 +89,16 @@ public:
 
     uint32_t GetNumberOfProgressElements() override;
 
-    bool GetProgressElementByIndex(uint32_t listIndex, ServiceArea::Structs::ProgressStruct::Type & aProgressElement) override;
+    bool GetProgressElementByIndex(uint32_t listIndex,
+                                   ServiceArea::Structs::ProgressStruct::Type & aProgressElement) override;
 
     bool GetProgressElementById(uint32_t aAreaId, uint32_t & listIndex,
                                 ServiceArea::Structs::ProgressStruct::Type & aProgressElement) override;
 
     bool AddProgressElementRaw(const Structs::ProgressStruct::Type & newProgressElement, uint32_t & listIndex) override;
 
-    bool ModifyProgressElementRaw(uint32_t listIndex, const Structs::ProgressStruct::Type & modifiedProgressElement) override;
+    bool ModifyProgressElementRaw(uint32_t listIndex,
+                                  const Structs::ProgressStruct::Type & modifiedProgressElement) override;
 
     bool ClearProgressRaw() override;
 

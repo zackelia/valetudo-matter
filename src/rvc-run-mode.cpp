@@ -1,8 +1,8 @@
 #include <app-common/zap-generated/cluster-objects.h>
 
 #include "clusters/rvc-run-mode.h"
-#include "logger.h"
 #include "lib/core/CHIPError.h"
+#include "logger.h"
 #include "rvc.h"
 
 using namespace chip;
@@ -43,7 +43,8 @@ CHIP_ERROR RvcRunModeDelegate::GetModeValueByIndex(uint8_t modeIndex, uint8_t & 
     return CHIP_NO_ERROR;
 }
 
-CHIP_ERROR RvcRunModeDelegate::GetModeTagsByIndex(uint8_t modeIndex, DataModel::List<detail::Structs::ModeTagStruct::Type> & modeTags)
+CHIP_ERROR RvcRunModeDelegate::GetModeTagsByIndex(uint8_t modeIndex,
+                                                  DataModel::List<detail::Structs::ModeTagStruct::Type> & modeTags)
 {
     TRACE;
 

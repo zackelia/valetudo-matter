@@ -1,10 +1,10 @@
 #include <arpa/inet.h>
 #include <cstdint>
 
-#include "lib/support/TypeTraits.h"
 #include "lib/core/CHIPError.h"
 #include "lib/support/CodeUtils.h"
 #include "lib/support/Span.h"
+#include "lib/support/TypeTraits.h"
 #include "logger.h"
 
 #include "mqtt/broker.h"
@@ -65,10 +65,9 @@ void Broker::ServerRead()
     chipDie();
 }
 
-template <typename T>
-T consume(chip::Span<char> & buffer)
+template <typename T> T consume(chip::Span<char> & buffer)
 {
-    T a = *reinterpret_cast<T*>(buffer.data());
+    T a = *reinterpret_cast<T *>(buffer.data());
     buffer = buffer.SubSpan(sizeof(T));
     return a;
 }
@@ -132,8 +131,8 @@ CHIP_ERROR Broker::Publish(const std::string & topic, const std::string & messag
     gBuffer[1] = payload_size - 2; // remaining length
     gBuffer[2] = topic.length() >> 8;
     gBuffer[3] = topic.length() & 0b11111111;
-    topic.copy(reinterpret_cast<char*>(gBuffer) + 4, topic.length());
-    message.copy(reinterpret_cast<char*>(gBuffer) + 4 + topic.length(), message.length());
+    topic.copy(reinterpret_cast<char *>(gBuffer) + 4, topic.length());
+    message.copy(reinterpret_cast<char *>(gBuffer) + 4 + topic.length(), message.length());
 
     ssize_t sent_bytes = mClient.Send(gBuffer, payload_size);
     if (sent_bytes < static_cast<ssize_t>(payload_size))
@@ -209,7 +208,7 @@ void Broker::HandleConnect(chip::Span<char> & buffer)
     response[1] = 2; // remaining length
     response[2] = 0; // connect ack flags (no session present flag)
     response[3] = 0; // connect reason code (success for clean start)
-    
+
     ssize_t sent_bytes = mClient.Send(response, sizeof(response));
     if (sent_bytes < static_cast<ssize_t>(sizeof(response)))
     {
@@ -226,13 +225,15 @@ void Broker::HandleSubscribe(chip::Span<char> & buffer)
     {
         auto topic_filter = consume_utf8(buffer);
         auto subscription_options = std::bitset<8>(consume<uint8_t>(buffer));
-        
-        if (subscription_options.test(1) || subscription_options.test(2) || subscription_options.test(3) || subscription_options.test(4) || subscription_options.test(5) || subscription_options.test(6) || subscription_options.test(7))
+
+        if (subscription_options.test(1) || subscription_options.test(2) || subscription_options.test(3) ||
+            subscription_options.test(4) || subscription_options.test(5) || subscription_options.test(6) ||
+            subscription_options.test(7))
         {
             ERROR("Unexpected subscription options: %s", subscription_options.to_string().c_str());
             chipDie();
         }
-        
+
         DEBUG("Client subscribing to %s (id %d)", topic_filter.data(), packet_identifier);
     }
 
@@ -363,7 +364,7 @@ void AssertFlags(std::bitset<4> flags, std::bitset<4> expected)
     {
         ERROR("Got unexpected flags");
         chipDie();
-    }        
+    }
 }
 
 void Broker::ClientRead()
@@ -431,27 +432,27 @@ void Broker::ClientRead()
 
     switch (static_cast<PACKET_TYPE>(packet_type))
     {
-        case PACKET_TYPE::CONNECT:
-            AssertFlags(flags, 0b0000);
-            HandleConnect(span);
-            break;
-        case PACKET_TYPE::PUBLISH:
-            HandlePublish(span, flags);
-            break;
-        case PACKET_TYPE::SUBSCRIBE:
-            AssertFlags(flags, 0b0010);
-            HandleSubscribe(span);
-            break;
-        case PACKET_TYPE::PINGREQ:
-            AssertFlags(flags, 0b0000);
-            HandlePingReq(span);
-            break;
-        case PACKET_TYPE::DISCONNECT:
-            HandleDisconnect(span, flags);
-            break;
-        default:
-            ERROR("Unhandled packet type: %d", packet_type);
-            chipDie();
+    case PACKET_TYPE::CONNECT:
+        AssertFlags(flags, 0b0000);
+        HandleConnect(span);
+        break;
+    case PACKET_TYPE::PUBLISH:
+        HandlePublish(span, flags);
+        break;
+    case PACKET_TYPE::SUBSCRIBE:
+        AssertFlags(flags, 0b0010);
+        HandleSubscribe(span);
+        break;
+    case PACKET_TYPE::PINGREQ:
+        AssertFlags(flags, 0b0000);
+        HandlePingReq(span);
+        break;
+    case PACKET_TYPE::DISCONNECT:
+        HandleDisconnect(span, flags);
+        break;
+    default:
+        ERROR("Unhandled packet type: %d", packet_type);
+        chipDie();
     }
 }
 

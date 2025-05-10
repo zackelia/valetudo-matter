@@ -15,7 +15,8 @@ app::DataModel::Nullable<uint32_t> RvcOperationalStateDelegate::GetCountdownTime
     return {};
 }
 
-CHIP_ERROR RvcOperationalStateDelegate::GetOperationalStateAtIndex(size_t index, OperationalState::GenericOperationalState & operationalState)
+CHIP_ERROR RvcOperationalStateDelegate::GetOperationalStateAtIndex(
+    size_t index, OperationalState::GenericOperationalState & operationalState)
 {
     TRACE;
 

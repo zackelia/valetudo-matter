@@ -2,21 +2,22 @@
 
 #include "broker.h"
 #include "clusters/rvc-clean-mode.h"
-#include <optional>
 #include <map>
+#include <optional>
 
 namespace chip::app::Clusters
 {
-    class RVC;
+class RVC;
 }
 
 namespace MQTT
 {
 class Valetudo
 {
-public:
+  public:
     CHIP_ERROR Init();
 
+    // clang-format off
     [[nodiscard]] std::optional<uint8_t> GetBatteryLevel() const { return mBatteryLevel; }
     [[nodiscard]] std::optional<uint8_t> GetCleanMode() const { return mCleanMode; }
     [[nodiscard]] std::optional<uint8_t> GetOperationalState() const { return mOperationalState; }
@@ -24,6 +25,7 @@ public:
     [[nodiscard]] std::optional<bool> GetDustBinInstalled() const { return mDustBinInstalled; }
     [[nodiscard]] std::optional<bool> GetMopInstalled() const { return mMopInstalled; }
     [[nodiscard]] std::optional<bool> GetWaterTankInstalled() const { return mWaterTankInstalled; }
+    // clang-format on
 
     CHIP_ERROR Locate();
     CHIP_ERROR SetCleanMode(uint8_t);
@@ -33,7 +35,8 @@ public:
     CHIP_ERROR Home();
 
     void SetRVC(chip::app::Clusters::RVC * rvc);
-private:
+
+  private:
     Broker mBroker;
 
     std::string mPrefix;

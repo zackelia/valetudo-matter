@@ -1,3 +1,5 @@
+#include "rvc.h"
+#include "app-common/zap-generated/attributes/Accessors.h"
 #include "app-common/zap-generated/cluster-enums.h"
 #include "app/clusters/mode-base-server/mode-base-cluster-objects.h"
 #include "clusters/rvc-clean-mode.h"
@@ -5,8 +7,6 @@
 #include "lib/core/CHIPError.h"
 #include "lib/support/TypeTraits.h"
 #include "logger.h"
-#include "rvc.h"
-#include "app-common/zap-generated/attributes/Accessors.h"
 
 using namespace chip::app::Clusters;
 
@@ -56,7 +56,7 @@ void RVC::HandleRunMode(uint8_t targetMode, ModeBase::Commands::ChangeToModeResp
 {
     TRACE;
     uint8_t currentState = mRvcOperationalStateInstance.GetCurrentOperationalState();
-    uint8_t currentMode  = mRunModeInstance.GetCurrentMode();
+    uint8_t currentMode = mRunModeInstance.GetCurrentMode();
     DEBUG("CurrentState: %d, CurrentMode: %d, TargetMode: %d", currentState, currentMode, targetMode);
 
     if (targetMode == RvcRunMode::ModeCleaning)
@@ -72,11 +72,13 @@ void RVC::HandleRunMode(uint8_t targetMode, ModeBase::Commands::ChangeToModeResp
         }
 
         mRunModeInstance.UpdateCurrentMode(targetMode);
-        mRvcOperationalStateInstance.SetOperationalState(to_underlying(RvcOperationalState::OperationalStateEnum::kRunning));
+        mRvcOperationalStateInstance.SetOperationalState(
+            to_underlying(RvcOperationalState::OperationalStateEnum::kRunning));
 
         // Selecting rooms is only valid when starting, not resuming.
         std::vector<uint32_t> areas;
-        if (mRvcOperationalStateInstance.GetCurrentOperationalState() != to_underlying(OperationalState::OperationalStateEnum::kPaused))
+        if (mRvcOperationalStateInstance.GetCurrentOperationalState() !=
+            to_underlying(OperationalState::OperationalStateEnum::kPaused))
         {
             for (uint32_t i = 0; i < mServiceAreaInstance.GetNumberOfSelectedAreas(); i++)
             {
@@ -108,7 +110,8 @@ void RVC::HandleRunMode(uint8_t targetMode, ModeBase::Commands::ChangeToModeResp
             currentState == to_underlying(OperationalState::OperationalStateEnum::kPaused))
         {
             mRunModeInstance.UpdateCurrentMode(targetMode);
-            mRvcOperationalStateInstance.SetOperationalState(to_underlying(RvcOperationalState::OperationalStateEnum::kSeekingCharger));
+            mRvcOperationalStateInstance.SetOperationalState(
+                to_underlying(RvcOperationalState::OperationalStateEnum::kSeekingCharger));
             mValetudo.Home();
             response.status = to_underlying(ModeBase::StatusCode::kSuccess);
         }
@@ -133,9 +136,9 @@ void RVC::HandleGoHome(OperationalState::GenericOperationalError & err)
     {
     case to_underlying(OperationalState::OperationalStateEnum::kStopped):
     case to_underlying(OperationalState::OperationalStateEnum::kRunning):
-    case to_underlying(OperationalState::OperationalStateEnum::kPaused):
-    {
-        CHIP_ERROR error = mRvcOperationalStateInstance.SetOperationalState(to_underlying(RvcOperationalState::OperationalStateEnum::kSeekingCharger));
+    case to_underlying(OperationalState::OperationalStateEnum::kPaused): {
+        CHIP_ERROR error = mRvcOperationalStateInstance.SetOperationalState(
+            to_underlying(RvcOperationalState::OperationalStateEnum::kSeekingCharger));
         if (error != CHIP_NO_ERROR)
         {
             err.Set(to_underlying(OperationalState::ErrorStateEnum::kUnableToCompleteOperation));
@@ -144,7 +147,7 @@ void RVC::HandleGoHome(OperationalState::GenericOperationalError & err)
 
         error = mValetudo.Home();
         err.Set((error == CHIP_NO_ERROR) ? to_underlying(OperationalState::ErrorStateEnum::kNoError)
-                                            : to_underlying(OperationalState::ErrorStateEnum::kUnableToCompleteOperation));
+                                         : to_underlying(OperationalState::ErrorStateEnum::kUnableToCompleteOperation));
         return;
     }
     default:
@@ -158,9 +161,9 @@ void RVC::HandlePause(OperationalState::GenericOperationalError & err)
     switch (mRvcOperationalStateInstance.GetCurrentOperationalState())
     {
     case to_underlying(OperationalState::OperationalStateEnum::kRunning):
-    case to_underlying(RvcOperationalState::OperationalStateEnum::kSeekingCharger):
-    {
-        CHIP_ERROR error = mRvcOperationalStateInstance.SetOperationalState(to_underlying(OperationalState::OperationalStateEnum::kPaused));
+    case to_underlying(RvcOperationalState::OperationalStateEnum::kSeekingCharger): {
+        CHIP_ERROR error = mRvcOperationalStateInstance.SetOperationalState(
+            to_underlying(OperationalState::OperationalStateEnum::kPaused));
         if (error != CHIP_NO_ERROR)
         {
             err.Set(to_underlying(OperationalState::ErrorStateEnum::kUnableToCompleteOperation));
@@ -169,7 +172,7 @@ void RVC::HandlePause(OperationalState::GenericOperationalError & err)
 
         error = mValetudo.Pause();
         err.Set((error == CHIP_NO_ERROR) ? to_underlying(OperationalState::ErrorStateEnum::kNoError)
-                                            : to_underlying(OperationalState::ErrorStateEnum::kUnableToCompleteOperation));
+                                         : to_underlying(OperationalState::ErrorStateEnum::kUnableToCompleteOperation));
         return;
     }
     default:
@@ -185,9 +188,9 @@ void RVC::HandleResume(OperationalState::GenericOperationalError & err)
     case to_underlying(OperationalState::OperationalStateEnum::kStopped):
     case to_underlying(OperationalState::OperationalStateEnum::kPaused):
     case to_underlying(RvcOperationalState::OperationalStateEnum::kCharging):
-    case to_underlying(RvcOperationalState::OperationalStateEnum::kDocked):
-    {
-        CHIP_ERROR error = mRvcOperationalStateInstance.SetOperationalState(to_underlying(OperationalState::OperationalStateEnum::kPaused));
+    case to_underlying(RvcOperationalState::OperationalStateEnum::kDocked): {
+        CHIP_ERROR error = mRvcOperationalStateInstance.SetOperationalState(
+            to_underlying(OperationalState::OperationalStateEnum::kPaused));
         if (error != CHIP_NO_ERROR)
         {
             err.Set(to_underlying(OperationalState::ErrorStateEnum::kUnableToCompleteOperation));
@@ -197,7 +200,7 @@ void RVC::HandleResume(OperationalState::GenericOperationalError & err)
         error = mValetudo.Start();
 
         err.Set((error == CHIP_NO_ERROR) ? to_underlying(OperationalState::ErrorStateEnum::kNoError)
-                                            : to_underlying(OperationalState::ErrorStateEnum::kUnableToCompleteOperation));
+                                         : to_underlying(OperationalState::ErrorStateEnum::kUnableToCompleteOperation));
 
         // Selected rooms are only valid for one run.
         if (!mServiceAreaInstance.ClearSelectedAreas())
@@ -276,9 +279,8 @@ void RVC::UpdateSupportedAreas(const std::map<uint32_t, std::string> & areas)
     for (const auto & [id, area] : areas)
     {
         chip::Span<const char> span(area.data(), area.size());
-        auto area_wrapper = ServiceArea::AreaStructureWrapper{}
-            .SetAreaId(id)
-            .SetLocationInfo(span, DataModel::NullNullable, DataModel::NullNullable);
+        auto area_wrapper = ServiceArea::AreaStructureWrapper{}.SetAreaId(id).SetLocationInfo(
+            span, DataModel::NullNullable, DataModel::NullNullable);
         if (!mServiceAreaInstance.AddSupportedArea(area_wrapper))
         {
             ERROR("Failed to add area");

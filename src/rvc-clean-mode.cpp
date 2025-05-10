@@ -40,7 +40,8 @@ CHIP_ERROR RvcCleanModeDelegate::GetModeValueByIndex(uint8_t modeIndex, uint8_t 
     return CHIP_NO_ERROR;
 }
 
-CHIP_ERROR RvcCleanModeDelegate::GetModeTagsByIndex(uint8_t modeIndex, DataModel::List<detail::Structs::ModeTagStruct::Type> & modeTags)
+CHIP_ERROR RvcCleanModeDelegate::GetModeTagsByIndex(uint8_t modeIndex,
+                                                    DataModel::List<detail::Structs::ModeTagStruct::Type> & modeTags)
 {
     TRACE;
 
@@ -60,7 +61,8 @@ CHIP_ERROR RvcCleanModeDelegate::GetModeTagsByIndex(uint8_t modeIndex, DataModel
     return CHIP_NO_ERROR;
 }
 
-void RvcCleanModeDelegate::HandleChangeToMode(uint8_t NewMode, ModeBase::Commands::ChangeToModeResponse::Type & response)
+void RvcCleanModeDelegate::HandleChangeToMode(uint8_t NewMode,
+                                              ModeBase::Commands::ChangeToModeResponse::Type & response)
 {
     TRACE;
     mRvc->HandleCleanMode(NewMode, response);

@@ -13,14 +13,14 @@ namespace MQTT
     allows for one client device to be connected. */
 class Broker
 {
-public:
+  public:
     Broker() = default;
 
     CHIP_ERROR Init(std::function<void(std::string, std::string)> publish_callback);
 
     CHIP_ERROR Publish(const std::string &, const std::string &);
 
-private:
+  private:
     Socket mServer;
     Socket mClient;
     bool mConnected = false;

@@ -4,7 +4,7 @@
 
 namespace chip::app::Clusters
 {
-    class RVC;
+class RVC;
 }
 
 namespace chip::app::Clusters::ServiceArea
@@ -12,10 +12,11 @@ namespace chip::app::Clusters::ServiceArea
 
 class RvcServiceAreaDelegate : public Delegate
 {
-public:
+  public:
     bool IsSetSelectedAreasAllowed(MutableCharSpan & statusText) override;
 
-    bool IsValidSelectAreasSet(const Span<const uint32_t> &selectedAreas, SelectAreasStatus &locationStatus, MutableCharSpan &statusText) override;
+    bool IsValidSelectAreasSet(const Span<const uint32_t> & selectedAreas, SelectAreasStatus & locationStatus,
+                               MutableCharSpan & statusText) override;
 
     bool IsSupportedAreasChangeAllowed() override;
 
@@ -23,7 +24,7 @@ public:
 
     void SetRVC(RVC * rvc);
 
-private:
+  private:
     RVC * mRvc = nullptr;
 };
 

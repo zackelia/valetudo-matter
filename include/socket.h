@@ -7,7 +7,7 @@
 
 class Socket
 {
-public:
+  public:
     Socket() = default;
     ~Socket();
 
@@ -33,7 +33,7 @@ public:
 
     void SocketCallback(chip::System::SocketEvents events);
 
-private:
+  private:
     explicit Socket(int fd);
 
     int mSockFd = -1;
