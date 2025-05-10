@@ -1,6 +1,5 @@
 #include "clusters/rvc-clean-mode.h"
 #include "logger.h"
-#include "app-common/zap-generated/callback.h"
 #include "rvc.h"
 
 using namespace chip;

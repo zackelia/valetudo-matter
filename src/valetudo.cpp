@@ -1,6 +1,8 @@
 #include "app-common/zap-generated/cluster-enums.h"
 #include "clusters/rvc-clean-mode.h"
-#include "json/json.h"
+#include "json/reader.h"
+#include "json/writer.h"
+#include "json/value.h"
 #include "clusters/rvc-run-mode.h"
 #include "lib/support/CodeUtils.h"
 #include "lib/support/TypeTraits.h"
@@ -104,7 +106,7 @@ void Valetudo::HandlePublish(const std::string & topic, const std::string & mess
 
     if (topic_view.find('$') == std::string::npos && topic_view.compare("MapData/map-data") != 0)
     {
-        DEBUG("ValetudoPublish: %s, message: %s", topic_view.data(), message.data());
+        DEBUG("ValetudoPublish: %s, message: %s", std::string(topic_view).c_str(), message.data());
     }
 
     if (topic_view.compare("AttachmentStateAttribute/dustbin") == 0)

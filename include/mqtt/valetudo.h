@@ -1,11 +1,7 @@
 #pragma once
 
-#include "app-common/zap-generated/cluster-enums.h"
-#include "app/clusters/operational-state-server/operational-state-cluster-objects.h"
 #include "broker.h"
 #include "clusters/rvc-clean-mode.h"
-#include "lib/support/Span.h"
-#include <functional>
 #include <optional>
 #include <map>
 

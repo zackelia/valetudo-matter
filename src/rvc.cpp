@@ -3,12 +3,9 @@
 #include "clusters/rvc-clean-mode.h"
 #include "clusters/rvc-run-mode.h"
 #include "lib/core/CHIPError.h"
-#include "lib/core/ErrorStr.h"
 #include "lib/support/TypeTraits.h"
 #include "logger.h"
-#include "platform/CHIPDeviceLayer.h"
 #include "rvc.h"
-#include "system/SocketEvents.h"
 #include "app-common/zap-generated/attributes/Accessors.h"
 
 using namespace chip::app::Clusters;
@@ -65,7 +62,7 @@ void RVC::HandleRunMode(uint8_t targetMode, ModeBase::Commands::ChangeToModeResp
     if (targetMode == RvcRunMode::ModeCleaning)
     {
         if (currentState != to_underlying(OperationalState::OperationalStateEnum::kStopped) &&
-            currentState != to_underlying(RvcOperationalState::OperationalStateEnum::kDocked) && 
+            currentState != to_underlying(RvcOperationalState::OperationalStateEnum::kDocked) &&
             currentState != to_underlying(RvcOperationalState::OperationalStateEnum::kCharging))
         {
             response.status = to_underlying(ModeBase::StatusCode::kInvalidInMode);

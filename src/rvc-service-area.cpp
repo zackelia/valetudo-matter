@@ -1,6 +1,5 @@
 #include <app-common/zap-generated/cluster-objects.h>
 #include "app-common/zap-generated/cluster-enums.h"
-#include "lib/support/TypeTraits.h"
 
 #include "clusters/rvc-service-area.h"
 #include "logger.h"

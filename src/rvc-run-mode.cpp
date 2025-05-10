@@ -1,11 +1,8 @@
 #include <app-common/zap-generated/cluster-objects.h>
-#include "app-common/zap-generated/callback.h"
-#include "app-common/zap-generated/cluster-enums.h"
 
 #include "clusters/rvc-run-mode.h"
 #include "logger.h"
 #include "lib/core/CHIPError.h"
-#include "lib/support/TypeTraits.h"
 #include "rvc.h"
 
 using namespace chip;

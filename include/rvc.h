@@ -10,8 +10,6 @@
 #include "clusters/rvc-service-area.h"
 #include "clusters/rvc-service-area-storage.h"
 #include "mqtt/valetudo.h"
-#include "logger.h"
-#include "socket.h"
 
 namespace chip::app::Clusters
 {
