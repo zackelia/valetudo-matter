@@ -16,6 +16,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Analyze build
+        run: docker build --file docker/analyze.Dockerfile --tag valetudo-matter-analyze:$(date +%s) docker
+
       - name: Build host image
         run: docker build --file docker/host.Dockerfile --tag valetudo-matter:$(date +%s) docker
 

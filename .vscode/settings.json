@@ -1,6 +1,7 @@
 {
     "clangd.path": "/usr/local/bin/clangd",
     "clangd.arguments": [
+        "--clang-tidy",
         "--compile-commands-dir=${workspaceFolder}/out/host/"
     ],
     "cmake.configureOnOpen": false,
