@@ -39,7 +39,7 @@ RUN git  clone https://github.com/zackelia/valetudo-matter && \
 
 WORKDIR /valetudo-matter
 
-ENV CLANGD_VERSION=20.1.0
+ENV CLANGD_VERSION=21.1.0
 
 RUN apt update && \
     DEBIAN_FRONTEND=noninteractive apt install -y wget && \

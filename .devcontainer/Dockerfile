@@ -25,7 +25,7 @@ RUN apt update && \
         wget && \
     update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
 
-ENV CLANGD_VERSION=20.1.0
+ENV CLANGD_VERSION=21.1.0
 RUN wget --directory-prefix=/tmp https://github.com/clangd/clangd/releases/download/${CLANGD_VERSION}/clangd-linux-${CLANGD_VERSION}.zip && \
     unzip /tmp/clangd-linux-${CLANGD_VERSION}.zip -d /tmp && \
     mv /tmp/clangd_${CLANGD_VERSION}/bin/* /usr/local/bin/ && \
