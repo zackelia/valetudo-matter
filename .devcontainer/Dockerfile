@@ -4,25 +4,26 @@ FROM ubuntu:jammy
 
 RUN apt update && \
     DEBIAN_FRONTEND=noninteractive apt install -y \
-    git \
-    python3 \
-    python3-pip \
-    python3-venv \
-    pkg-config \
-    libssl-dev \
-    libdbus-1-dev \
-    libglib2.0-dev \
-    libavahi-client-dev \
-    ninja-build \
-    python3-venv \
-    python3-dev\
-    python3-pip \
-    unzip \
-    libgirepository1.0-dev \
-    libcairo2-dev \
-    libreadline-dev \
-    sudo \
-    wget
+        curl \
+        git \
+        python3-pip \
+        python3.11 \
+        python3.11-venv \
+        libpython3.11-dev \
+        pkg-config \
+        libssl-dev \
+        libdbus-1-dev \
+        libglib2.0-dev \
+        libavahi-client-dev \
+        ninja-build \
+        unzip \
+        libgirepository1.0-dev \
+        libcairo2-dev \
+        libreadline-dev \
+        libffi-dev \
+        sudo \
+        wget && \
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
 
 ENV CLANGD_VERSION=20.1.0
 RUN wget --directory-prefix=/tmp https://github.com/clangd/clangd/releases/download/${CLANGD_VERSION}/clangd-linux-${CLANGD_VERSION}.zip && \

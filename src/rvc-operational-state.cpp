@@ -20,7 +20,7 @@ CHIP_ERROR RvcOperationalStateDelegate::GetOperationalStateAtIndex(
 {
     TRACE;
 
-    if (index >= ArraySize(mOperationalStateList))
+    if (index >= MATTER_ARRAY_SIZE(mOperationalStateList))
     {
         return CHIP_ERROR_NOT_FOUND;
     }
