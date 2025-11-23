@@ -1,6 +1,5 @@
 #include "rvc.h"
 #include "app-common/zap-generated/attributes/Accessors.h"
-#include "app-common/zap-generated/cluster-enums.h"
 #include "app/clusters/mode-base-server/mode-base-cluster-objects.h"
 #include "clusters/rvc-clean-mode.h"
 #include "clusters/rvc-run-mode.h"

@@ -3,7 +3,6 @@
 #include <app/clusters/mode-base-server/mode-base-server.h>
 #include <app/clusters/operational-state-server/operational-state-server.h>
 
-#include "app-common/zap-generated/cluster-enums.h"
 #include "clusters/rvc-clean-mode.h"
 #include "clusters/rvc-operational-state.h"
 #include "clusters/rvc-run-mode.h"

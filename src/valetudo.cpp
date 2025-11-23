@@ -1,5 +1,4 @@
 #include "mqtt/valetudo.h"
-#include "app-common/zap-generated/cluster-enums.h"
 #include "clusters/rvc-clean-mode.h"
 #include "clusters/rvc-run-mode.h"
 #include "lib/support/CodeUtils.h"
